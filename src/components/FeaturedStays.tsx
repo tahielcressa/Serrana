@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { properties } from '../data/demo'
-import ScrollReveal from './ScrollReveal'
+import { ScrollReveal } from './ScrollReveal'
 import StayCard from './StayCard'
 import { SectionHeader } from './ui'
 
@@ -8,13 +8,21 @@ export default function FeaturedStays() {
   const featured = [...properties].sort((a, b) => b.rating - a.rating).slice(0, 4)
 
   return (
-    <section className="bg-white/60 py-20" id="alojamientos">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader
-          tag="donde dormir"
-          title="Alojamientos destacados en las sierras."
-          subtitle="Domos, glampings, cabañas y lugares para carpar, elegidos por nuestra comunidad."
-        />
+    <section id="alojamientos" className="scroll-mt-16 bg-cream-dark">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <SectionHeader
+            tag="Dónde dormir"
+            title="Alojamientos en las sierras."
+            subtitle="Camping, domos, glampings, cabañas y refugios, con ubicación real en el mapa."
+          />
+          <Link
+            to="/explore"
+            className="rounded-full border border-cielo-950 px-5 py-2.5 text-sm font-semibold text-cielo-950 transition-colors hover:bg-cielo-950 hover:text-cream"
+          >
+            Ver todos los lugares
+          </Link>
+        </div>
 
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featured.map((p, i) => (
@@ -23,15 +31,6 @@ export default function FeaturedStays() {
             </ScrollReveal>
           ))}
         </div>
-
-        <ScrollReveal className="mt-10 text-center">
-          <Link
-            to="/explore"
-            className="inline-flex items-center gap-2 rounded-full border border-forest-700 px-6 py-3 text-sm font-semibold text-forest-700 transition-colors hover:bg-forest-700 hover:text-cream"
-          >
-            Ver todos los espacios →
-          </Link>
-        </ScrollReveal>
       </div>
     </section>
   )

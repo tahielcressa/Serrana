@@ -14,7 +14,7 @@ export default function Footer() {
                   <circle cx="48" cy="15" r="4" fill="#faf7f1" />
                 </svg>
               </span>
-              <span className="font-display text-xl font-semibold text-cream">Serrana</span>
+              <span className="text-lg font-semibold tracking-tight text-cream">Serrana</span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-piedra-400">
               Turismo de naturaleza y aventura. Campings, domos, cabañas, trekkings y experiencias
@@ -55,9 +55,9 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-piedra-500 sm:flex-row">
-          <p>© {new Date().getFullYear()} Serrana. Inspirado en las Sierras de Córdoba.</p>
-          <p className="rounded-full bg-white/5 px-3 py-1">Datos de demostración · MVP</p>
+        <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-6 text-xs text-piedra-500 sm:flex-row">
+          <p>© {new Date().getFullYear()} Serrana · Sierras de Córdoba</p>
+          <p>Prototipo: lugares reales con inventario de ejemplo</p>
         </div>
       </div>
     </footer>

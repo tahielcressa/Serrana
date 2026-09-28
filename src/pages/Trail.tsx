@@ -1,5 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { trailById, properties, difficultyColor, money } from '../data/demo'
+import { SinglePinMap } from '../components/MapView'
+import { WalkIcon, ClockIcon, ChartIcon, MountainIcon } from '../components/Icons'
 import { Rating } from '../components/ui'
 
 export default function Trail() {
@@ -8,20 +10,35 @@ export default function Trail() {
 
   if (!trail) {
     return (
-      <main className="mx-auto flex min-h-svh max-w-2xl flex-col items-center justify-center px-4 text-center">
-        <p className="text-5xl">🥾</p>
-        <h1 className="mt-4 font-display text-3xl font-semibold">No encontramos esa ruta</h1>
-        <Link to="/explore?tipo=trail" className="mt-6 rounded-full bg-forest-700 px-6 py-3 text-sm font-semibold text-cream">
+      <main className="mx-auto flex min-h-dvh max-w-2xl flex-col items-center justify-center px-4 text-center">
+        <h1 className="text-2xl font-semibold">No encontramos esa ruta</h1>
+        <Link to="/explore?tipo=trail" className="mt-6 rounded-full bg-cielo-950 px-6 py-3 text-sm font-semibold text-cream">
           Volver a los trekkings
         </Link>
       </main>
     )
   }
 
-  const sleepNearby = properties.slice(0, 4)
+  const stats = [
+    { label: 'Distancia', value: `${trail.distanceKm} km`, Icon: WalkIcon },
+    { label: 'Duración', value: `${trail.durationH} h`, Icon: ClockIcon },
+    { label: 'Desnivel', value: `+${trail.elevationGain} m`, Icon: ChartIcon },
+    { label: 'Alt. máxima', value: `${trail.maxAltitude} msnm`, Icon: MountainIcon },
+  ]
+
+  // trazado aproximado alrededor del punto de la ruta para dibujarla en el mapa
+  const [lat, lng] = trail.coordinates
+  const path: [number, number][] = [
+    [lat - 0.035, lng + 0.05],
+    [lat - 0.02, lng + 0.015],
+    [lat - 0.006, lng + 0.035],
+    [lat + 0.008, lng - 0.01],
+    [lat + 0.02, lng - 0.04],
+    [lat + 0.03, lng - 0.01],
+  ]
 
   return (
-    <main className="mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 lg:px-8">
       <p className="flex items-center gap-1.5 text-sm text-piedra-500">
         <Link to="/explore" className="hover:text-forest-700">Explorar</Link>
         <span>/</span>
@@ -30,119 +47,92 @@ export default function Trail() {
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold text-cielo-950 sm:text-4xl">{trail.name}</h1>
-          <p className="mt-2 text-piedra-500">{trail.location}</p>
+          <h1 className="text-2xl font-semibold text-cielo-950 sm:text-3xl">{trail.name}</h1>
+          <p className="mt-1.5 text-sm text-piedra-500">{trail.location}</p>
         </div>
-        <Rating value={trail.rating} count={trail.reviews} />
+        <div className="flex items-center gap-3">
+          <span
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${difficultyColor[trail.difficulty]}`}
+          >
+            {trail.difficulty}
+          </span>
+          <Rating value={trail.rating} count={trail.reviews} />
+        </div>
       </div>
 
-      {/* Stats hero */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {[
-          { k: 'Distancia', v: `${trail.distanceKm} km`, emoji: '🥾' },
-          { k: 'Duración', v: `${trail.durationH} h`, emoji: '⏱️' },
-          { k: 'Desnivel +', v: `+${trail.elevationGain} m`, emoji: '📈' },
-          { k: 'Alt. máxima', v: `${trail.maxAltitude} m`, emoji: '🏔️' },
-          { k: 'Dificultad', v: trail.difficulty, emoji: '🎯', badge: true },
-        ].map((s) => (
-          <div key={s.k} className="rounded-3xl bg-white p-5 text-center ring-1 ring-piedra-200">
-            <span className="text-2xl">{s.emoji}</span>
-            <p className={`mt-2 text-lg font-semibold ${s.badge ? '' : 'text-cielo-950'}`}>
-              {s.badge ? (
-                <span className={`rounded-full px-3 py-1 text-sm ${difficultyColor[trail.difficulty]}`}>{s.v}</span>
-              ) : (
-                s.v
-              )}
-            </p>
-            <p className="text-[11px] uppercase tracking-wider text-piedra-400">{s.k}</p>
+      {/* Ficha técnica */}
+      <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-piedra-200 py-6 sm:grid-cols-4">
+        {stats.map(({ label, value, Icon }) => (
+          <div key={label} className="flex items-center gap-3">
+            <Icon className="h-5 w-5 shrink-0 text-forest-600" />
+            <div>
+              <dt className="text-xs text-piedra-500">{label}</dt>
+              <dd className="text-sm font-semibold text-cielo-950">{value}</dd>
+            </div>
           </div>
         ))}
-      </div>
+      </dl>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[1.6fr_1fr]">
         <div>
-          {/* Mapa de ruta */}
-          <div className="relative h-[420px] overflow-hidden rounded-3xl">
-            <img src={trail.image} alt={trail.name} className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-cielo-950/60" />
-            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 800 420" preserveAspectRatio="none" aria-hidden>
-              <path
-                d="M80 360 C 180 320, 120 250, 240 250 S 360 190, 420 210 S 500 280, 560 190 S 660 120, 700 90"
-                fill="none"
-                stroke="#faf7f1"
-                strokeWidth="4"
-                strokeDasharray="2 10"
-                strokeLinecap="round"
-              />
-              <circle cx="80" cy="360" r="9" fill="#faf7f1" stroke="#b07e52" strokeWidth="3" />
-              <circle cx="700" cy="90" r="9" fill="#b07e52" stroke="#faf7f1" strokeWidth="3" />
-            </svg>
-            <span className="absolute left-4 top-4 rounded-full bg-cielo-950/70 px-4 py-2 text-xs text-cream backdrop-blur">
-              🗺️ Ruta {trail.distanceKm} km → {trail.durationH} h
-            </span>
-            <span className="absolute bottom-4 left-4 rounded-full bg-cream px-4 py-2 text-xs font-semibold text-cielo-950">
-              {trail.emoji} Inicio del sendero
-            </span>
-          </div>
+          <SinglePinMap
+            className="h-[420px] rounded-2xl"
+            position={trail.coordinates}
+            zoom={12}
+            trail={path}
+          />
+          <p className="mt-3 text-xs text-piedra-500">
+            Trazado orientativo de la ruta. Parte desde {trail.location}.
+          </p>
 
           <section className="mt-10">
-            <h2 className="font-display text-xl font-semibold text-cielo-950">Sobre la ruta</h2>
+            <h2 className="text-lg font-semibold text-cielo-950">Sobre la ruta</h2>
             <p className="mt-4 leading-relaxed text-piedra-600">{trail.description}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-2">
               {trail.terrain.map((t) => (
-                <span key={t} className="rounded-full bg-forest-50 px-4 py-1.5 text-xs font-semibold text-forest-700">
-                  🧭 {t}
+                <span key={t} className="rounded-full bg-forest-50 px-3.5 py-1.5 text-xs font-medium text-forest-700">
+                  {t}
                 </span>
               ))}
             </div>
           </section>
 
-          <section className="mt-10">
-            <h2 className="font-display text-xl font-semibold text-cielo-950">Recomendaciones</h2>
-            <ul className="mt-4 space-y-2 text-sm text-piedra-600">
-              <li>• Llevar al menos 2 L de agua por persona.</li>
-              <li>• Salir temprano: el calor serrano pega fuerte al mediodía.</li>
-              <li>• Calzado con buena pisada y bastones si es Difícil.</li>
-              <li>• Sumá protector solar y gorra aunque esté nublado.</li>
+          <section className="mt-10 border-t border-piedra-200 pt-8">
+            <h2 className="text-lg font-semibold text-cielo-950">Antes de salir</h2>
+            <ul className="mt-4 space-y-2.5 text-sm leading-relaxed text-piedra-600">
+              <li>· Llevá al menos 2 L de agua por persona.</li>
+              <li>· Salí temprano: al mediodía el calor serrano es intenso.</li>
+              <li>· Calzado con buena pisada; bastones recomendados si es Difícil.</li>
+              <li>· Protector solar y gorra, esté nublado o no.</li>
             </ul>
-          </section>
-
-          <section className="mt-10">
-            <h2 className="font-display text-xl font-semibold text-cielo-950">Comentarios</h2>
-            <div className="mt-4 space-y-3">
-              {[
-                { u: 'Marta R.', t: 'Hermoso paisaje, señalizado perfecto', stars: 5 },
-                { u: 'Julián P.', t: 'Exigente pero vale cada paso', stars: 4 },
-              ].map((c) => (
-                <div key={c.u} className="rounded-2xl bg-white p-4 ring-1 ring-piedra-200">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-cielo-950">{c.u}</p>
-                    <span className="text-sm text-earth-400">{'★'.repeat(c.stars)}</span>
-                  </div>
-                  <p className="mt-1 text-sm text-piedra-600">{c.t}</p>
-                </div>
-              ))}
-            </div>
           </section>
         </div>
 
-        {/* Dónde dormir cerca */}
         <aside>
-          <div className="rounded-3xl border border-piedra-200 bg-white p-6 sticky top-24 shadow-lg shadow-forest-900/5">
-            <h2 className="font-display text-lg font-semibold text-cielo-950">Dónde dormir cerca</h2>
-            <p className="mt-1 text-xs text-piedra-400">Alojamientos a menos de 30 km de la ruta</p>
-            <div className="mt-4 space-y-3">
-              {sleepNearby.map((p) => (
-                <Link key={p.id} to={`/property/${p.id}`} className="group flex items-center gap-3 rounded-2xl border border-piedra-200 p-3 transition-colors hover:border-forest-400">
-                  <img src={p.image} alt={p.name} className="h-14 w-14 rounded-xl object-cover" />
+          <div className="lg:sticky lg:top-20">
+            <h2 className="text-lg font-semibold text-cielo-950">Dónde dormir cerca</h2>
+            <p className="mt-1 text-sm text-piedra-500">Alojamientos con salida a esta ruta</p>
+            <div className="mt-5 divide-y divide-piedra-100 border-y border-piedra-100">
+              {properties.slice(0, 4).map((p) => (
+                <Link key={p.id} to={`/property/${p.id}`} className="group flex items-center gap-3 py-3.5">
+                  <img src={p.image} alt={p.name} className="h-14 w-14 shrink-0 rounded-lg object-cover" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-cielo-950 group-hover:text-forest-700">{p.name}</p>
-                    <p className="text-xs text-piedra-500">{p.emoji} {p.category} · {money(p.pricePerNight)}/noche</p>
+                    <p className="truncate text-sm font-semibold text-cielo-950 group-hover:text-forest-700">
+                      {p.name}
+                    </p>
+                    <p className="mt-0.5 text-xs text-piedra-500">
+                      {money(p.pricePerNight)} / noche · {p.location}
+                    </p>
                   </div>
-                  <span className="text-xs text-piedra-400">{p.nearby[0]?.distance}</span>
                 </Link>
               ))}
             </div>
+            <Link
+              to="/explore"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-piedra-300 px-5 py-3 text-sm font-semibold text-cielo-950 transition-colors hover:border-cielo-950"
+            >
+              Ver todos los lugares
+            </Link>
           </div>
         </aside>
       </div>

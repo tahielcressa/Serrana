@@ -59,3 +59,88 @@ export const MountainIcon = ({ className = 'h-5 w-5' }: IconProps) => (
     <path d="m3 20 6-13 3.5 7.5L15 11l6 9H3Z" />
   </svg>
 )
+
+export const TentIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M12 4 3 20h18L12 4Z" />
+    <path d="M12 4v16" />
+    <path d="m12 20-4.5-7h9L12 20Z" />
+  </svg>
+)
+
+export const DomeIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M3 19a9 9 0 0 1 18 0" />
+    <path d="M3 19h18M12 10v9M7.5 12.5 12 10l4.5 2.5" />
+  </svg>
+)
+
+export const CabinIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M4 20V10l8-6 8 6v10" />
+    <path d="M10 20v-5h4v5M4 14h16" />
+  </svg>
+)
+
+export const BackpackIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <rect x="6" y="7" width="12" height="13" rx="3" />
+    <path d="M9 7V5.5A2.5 2.5 0 0 1 11.5 3h1A2.5 2.5 0 0 1 15 5.5V7M6 12h12M10 12v2h4v-2" />
+  </svg>
+)
+
+export const CampfireIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M12 3c3 3.5 4.5 6 4.5 8a4.5 4.5 0 0 1-9 0c0-1.2.4-2.3 1.2-3.4" />
+    <path d="M3 20h18M6.5 20l5.5-6 5.5 6" />
+  </svg>
+)
+
+export const VanIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M3 16V7a1 1 0 0 1 1-1h9v10" />
+    <path d="M13 10h4l3 3v3h-2" />
+    <circle cx="7.5" cy="17.5" r="1.8" />
+    <circle cx="16.5" cy="17.5" r="1.8" />
+  </svg>
+)
+
+export const WalkIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <circle cx="13" cy="4.5" r="1.8" />
+    <path d="m10 21 2.5-5.5L11 13l-1.5 3M13.5 9 9.5 11.5 7 10M13.5 9l3 3 2 .5M13.5 9l-1 4.5 3 3.5" />
+  </svg>
+)
+
+export const ClockIcon = ({ className = 'h-4 w-4' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 2" />
+  </svg>
+)
+
+export const ChartIcon = ({ className = 'h-4 w-4' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M4 19 10 11l4 4 6-8" />
+    <path d="M4 19h16" />
+  </svg>
+)
+
+export const LayersIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+    <path d="m3 13 9 5 9-5" />
+  </svg>
+)
+
+export const ChevronRightIcon = ({ className = 'h-4 w-4' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="m9 5 7 7-7 7" />
+  </svg>
+)
+
+export const SparkIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="m12 3 2.2 5.6L20 11l-5.8 2.4L12 19l-2.2-5.6L4 11l5.8-2.4L12 3Z" />
+  </svg>
+)

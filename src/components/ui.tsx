@@ -4,19 +4,12 @@ import ScrollReveal from './ScrollReveal'
 
 export function SectionTag({ children }: { children: ReactNode }) {
   return (
-    <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-forest-600">
-      <span className="h-px w-8 bg-earth-400" />
-      {children}
-    </p>
+    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-700">{children}</p>
   )
 }
 
 export function SectionTitle({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return (
-    <h2 className={`font-display text-3xl font-semibold leading-tight text-cielo-950 sm:text-4xl ${className}`}>
-      {children}
-    </h2>
-  )
+  return <h2 className={`text-2xl font-semibold leading-tight text-cielo-950 sm:text-3xl ${className}`}>{children}</h2>
 }
 
 export function SectionHeader({
@@ -32,11 +25,9 @@ export function SectionHeader({
 }) {
   return (
     <ScrollReveal className={center ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
-      <div className={center ? 'flex justify-center' : ''}>
-        <SectionTag>{tag}</SectionTag>
-      </div>
+      <SectionTag>{tag}</SectionTag>
       <SectionTitle className="mt-3">{title}</SectionTitle>
-      {subtitle ? <p className="mt-3 text-piedra-500">{subtitle}</p> : null}
+      {subtitle ? <p className="mt-3 leading-relaxed text-piedra-500">{subtitle}</p> : null}
     </ScrollReveal>
   )
 }

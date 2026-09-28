@@ -1,6 +1,6 @@
 // ============================================================
-// Serum datos de DEMOSTRACIÓN (ficticios pero realistas).
-// Lugares reales de Córdoba aparecen con datos claramente demo.
+// Datos de demostración: lugares reales de Córdoba con inventario ficticio.
+// Sirven para maquetar la interfaz; se reemplazan por la API cuando exista.
 // ============================================================
 
 export const img = (id: string, w = 900) =>
@@ -66,6 +66,7 @@ export interface Experience {
   image: string
   description: string
   emoji: string
+  coordinates: [number, number]
 }
 
 export interface RegionInfo {
@@ -74,7 +75,6 @@ export interface RegionInfo {
   tagline: string
   description: string
   image: string
-  propertiesCount: number
 }
 
 // ---------- Regiones ----------
@@ -85,7 +85,6 @@ export const regions: RegionInfo[] = [
     tagline: 'Naturaleza a minutos de la ciudad',
     description: 'Cerros, ríos y senderos perfectos para una escapada exprés.',
     image: img('1506905925346-21bda4d32df4', 1000),
-    propertiesCount: 34,
   },
   {
     id: 'punilla',
@@ -93,7 +92,6 @@ export const regions: RegionInfo[] = [
     tagline: 'Lagos, montañas y pueblos serranos',
     description: 'El valle más famoso de Córdoba, entre el lago y las cumbres.',
     image: img('1454496522488-7a8e488e8606', 1000),
-    propertiesCount: 41,
   },
   {
     id: 'traslasierra',
@@ -101,7 +99,6 @@ export const regions: RegionInfo[] = [
     tagline: 'Montañas, ríos y cielos inmensos',
     description: 'Algunos de los paisajes más salvajes y los mejores cielos nocturnos.',
     image: img('1441974231531-c6227db76b6e', 1000),
-    propertiesCount: 28,
   },
   {
     id: 'calamuchita',
@@ -109,7 +106,6 @@ export const regions: RegionInfo[] = [
     tagline: 'Bosques, ríos y encanto europeo',
     description: 'Lagos cristalinos y pueblos con aire de montaña alpina.',
     image: img('1501785888041-af3ef285b470', 1000),
-    propertiesCount: 39,
   },
   {
     id: 'sierras-del-sur',
@@ -117,7 +113,6 @@ export const regions: RegionInfo[] = [
     tagline: 'Sierras de aventura y tranquilidad',
     description: 'Terrenos más ondulados, ideales para trekking y ciclismo.',
     image: img('1464822759023-fed622ff2c3b', 1000),
-    propertiesCount: 22,
   },
   {
     id: 'paravachasca',
@@ -125,19 +120,18 @@ export const regions: RegionInfo[] = [
     tagline: 'El valle esmeralda',
     description: 'Ríos transparentes y bosques nativos que invitan a quedarse.',
     image: img('1470071459604-3b5ec3a7fe05', 1000),
-    propertiesCount: 26,
   },
 ]
 
-// ---------- Aventuras (categorías de búsqueda) ----------
+// ---------- Categorías de búsqueda (el ícono se resuelve en la UI) ----------
 export const adventureCategories = [
-  { emoji: '🏕️', label: 'Camping', desc: 'Dormir bajo las estrellas' },
-  { emoji: '⛺', label: 'Glamping', desc: 'Naturaleza con confort' },
-  { emoji: '🏡', label: 'Cabaña', desc: 'Rincón serrano' },
-  { emoji: '🔮', label: 'Domo', desc: 'Acogedor y panorámico' },
-  { emoji: '🏔️', label: 'Trekking', desc: 'Conquistar una montaña' },
-  { emoji: '🔥', label: 'Experiencia', desc: 'Aventura con amigos' },
-  { emoji: '🚐', label: 'Motorhome', desc: 'Viajar sin ataduras' },
+  { id: 'camping', label: 'Camping', desc: 'Dormir bajo las estrellas' },
+  { id: 'glamping', label: 'Glamping', desc: 'Naturaleza con confort' },
+  { id: 'cabana', label: 'Cabaña', desc: 'Rincón serrano' },
+  { id: 'domo', label: 'Domo', desc: 'Acogedor y panorámico' },
+  { id: 'trekking', label: 'Trekking', desc: 'Conquistar una montaña' },
+  { id: 'experiencia', label: 'Experiencia', desc: 'Aventura con amigos' },
+  { id: 'motorhome', label: 'Motorhome', desc: 'Viajar sin ataduras' },
 ]
 
 // ---------- Alojamientos ----------
@@ -502,6 +496,7 @@ export const experiences: Experience[] = [
     image: img('1446776811953-b23d57bd21aa', 1000),
     description: 'Noche de telescopio, láser astronómico y mitología de las constelaciones australes.',
     emoji: '🌌',
+    coordinates: [-31.72, -64.9],
   },
   {
     id: 'kayak-lago-san-roque',
@@ -514,6 +509,7 @@ export const experiences: Experience[] = [
     image: img('1544551763-46a013bb70d5', 1000),
     description: 'Remá en aguas calmas mientras sale el sol sobre el lago San Roque.',
     emoji: '🛶',
+    coordinates: [-31.44, -64.48],
   },
   {
     id: 'cabalgata-valle-de-paravachasca',
@@ -526,6 +522,7 @@ export const experiences: Experience[] = [
     image: img('1501785888041-af3ef285b470', 1000),
     description: 'Cabalgata por bosques y ríos con guía local y parada con mate en la montaña.',
     emoji: '🐎',
+    coordinates: [-31.65, -64.42],
   },
   {
     id: 'escalada-los-gigantes',
@@ -538,6 +535,7 @@ export const experiences: Experience[] = [
     image: img('1458442310121-dde6eebf2c41', 1000),
     description: 'Vías para todos los niveles sobre las paredes de granito más famosas de Córdoba.',
     emoji: '🧗',
+    coordinates: [-31.37, -64.79],
   },
   {
     id: 'pesca-embalse',
@@ -550,6 +548,7 @@ export const experiences: Experience[] = [
     image: img('1500475325023-37b63fbd35a2', 1000),
     description: 'Pesca deportiva con guía, equipo incluido y costa tranquila garantizada.',
     emoji: '🎣',
+    coordinates: [-32.06, -64.5],
   },
   {
     id: 'fogata-con-asado',
@@ -562,21 +561,23 @@ export const experiences: Experience[] = [
     image: img('1504280390367-361c6d9f38f4', 1000),
     description: 'Asado criollo, guitarras y fogón bajo el cielo estrellado de las sierras.',
     emoji: '🔥',
+    coordinates: [-31.74, -65.02],
   },
 ]
 
-// ---------- Helpers para búsqueda de demo ----------
+// ---------- Helpers ----------
 export const propertyById = (id: string) => properties.find((p) => p.id === id)
 export const trailById = (id: string) => trails.find((t) => t.id === id)
+export const experienceById = (id: string) => experiences.find((x) => x.id === id)
 
-export const categoryEmoji: Record<PropertyCategory, string> = {
-  camping: '🏕️',
-  glamping: '⛺',
-  domo: '🔮',
-  cabaña: '🏡',
-  'tiny house': '🏡',
-  refugio: '⛰️',
-  motorhome: '🚐',
+export const categoryLabel: Record<PropertyCategory, string> = {
+  camping: 'Camping',
+  glamping: 'Glamping',
+  domo: 'Domo',
+  cabaña: 'Cabaña',
+  'tiny house': 'Tiny house',
+  refugio: 'Refugio',
+  motorhome: 'Motorhome',
 }
 
 export const difficultyColor: Record<Trail['difficulty'], string> = {

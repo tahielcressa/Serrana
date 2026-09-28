@@ -53,8 +53,9 @@
   --color-cream: #faf7f1;
   --color-cream-dark: #f1ecdf;
 
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Una sola tipografía: sans, con tracking cerrado en los títulos. */
+  --font-display: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 html {
@@ -66,6 +67,17 @@ body {
   background-color: var(--color-cream);
   color: var(--color-cielo-950);
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04";
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.022em;
+}
+
+.font-display {
+  letter-spacing: -0.03em;
 }
 
 ::selection {
@@ -73,7 +85,6 @@ body {
   color: var(--color-cream);
 }
 
-/* barra de scroll sutil */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -88,24 +99,32 @@ body {
   background: var(--color-piedra-400);
 }
 
-/* ---- revea en scroll ---- */
+/* ---- entrada en scroll ---- */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(26px);
   transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .reveal.is-visible {
   opacity: 1;
   transform: none;
 }
 
-/* entrada del hero */
+/* barrido de imagen al entrar */
+.reveal-img {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-img.is-visible {
+  clip-path: inset(0 0 0 0);
+}
+
 @keyframes hero-fade {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -113,31 +132,203 @@ body {
   }
 }
 .hero-fade {
-  animation: hero-fade 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hero-fade 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* drift suave para el zoom lento del hero */
 @keyframes slow-zoom {
   from {
     transform: scale(1);
   }
   to {
-    transform: scale(1.08);
+    transform: scale(1.07);
   }
 }
 .hero-zoom {
-  animation: slow-zoom 24s ease-out forwards;
+  animation: slow-zoom 26s ease-out forwards;
 }
 
 @keyframes float-drift {
   0%,
   100% {
     transform: translateY(0);
+    opacity: 0.5;
   }
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-7px);
+    opacity: 1;
   }
 }
 .float-drift {
-  animation: float-drift 6s ease-in-out infinite;
+  animation: float-drift 5.5s ease-in-out infinite;
+}
+
+/* crossfade de la sección scrolly */
+@keyframes scrolly-fade {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.scrolly-active {
+  animation: scrolly-fade 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---- Leaflet: pines, popups y controles ---- */
+.leaflet-container {
+  font: inherit;
+  background: #e8e6e0;
+}
+
+.serrana-pin-wrap {
+  background: transparent;
+  border: 0;
+}
+
+.serrana-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-cielo-950);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow:
+    0 1px 2px rgba(11, 20, 29, 0.16),
+    0 4px 12px rgba(11, 20, 29, 0.16);
+  transition:
+    transform 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease;
+}
+.serrana-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%) rotate(45deg);
+  background: inherit;
+}
+.serrana-pin:hover {
+  transform: translate(-50%, -100%) scale(1.07);
+}
+.serrana-pin.is-active {
+  background: var(--color-cielo-950);
+  color: var(--color-cream);
+  z-index: 10;
+}
+
+.serrana-dot {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--color-forest-800);
+  border: 3px solid var(--color-cream);
+  box-shadow: 0 2px 6px rgba(11, 20, 29, 0.3);
+}
+
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(11, 20, 29, 0.2);
+}
+.leaflet-popup-content {
+  margin: 0;
+  width: 228px !important;
+}
+.leaflet-popup-tip-container {
+  display: none;
+}
+.leaflet-popup-close-button {
+  display: none;
+}
+
+.serrana-popup {
+  display: block;
+}
+.serrana-popup-img {
+  width: 100%;
+  height: 118px;
+  object-fit: cover;
+  display: block;
+}
+.serrana-popup-body {
+  padding: 10px 12px 12px;
+}
+.serrana-popup-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-cielo-950);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.serrana-popup-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-piedra-500);
+}
+.serrana-popup-foot {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-piedra-500);
+}
+
+.leaflet-control-zoom {
+  border: 0 !important;
+  box-shadow:
+    0 1px 2px rgba(11, 20, 29, 0.14),
+    0 4px 14px rgba(11, 20, 29, 0.14) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+.leaflet-control-zoom a {
+  color: var(--color-cielo-950) !important;
+  background: #fff !important;
+  border-color: var(--color-piedra-200) !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(250, 247, 241, 0.82) !important;
+  font-size: 10px !important;
+  color: var(--color-piedra-500) !important;
+  padding: 1px 6px !important;
+}
+.leaflet-control-attribution a {
+  color: var(--color-piedra-700) !important;
+}
+
+/* ---- accesibilidad: sin movimiento si el usuario no lo pide ---- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal,
+  .reveal-img {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    transition: none;
+  }
+  .hero-zoom,
+  .hero-fade,
+  .float-drift,
+  .scrolly-active {
+    animation: none;
+  }
 }

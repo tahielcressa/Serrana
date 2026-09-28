@@ -1,84 +1,91 @@
 import { Link } from 'react-router-dom'
 import { img } from '../data/demo'
-import ScrollReveal from './ScrollReveal'
+import { ScrollReveal, ImageReveal } from './ScrollReveal'
 
 const steps = [
-  { n: '01', title: 'Buscá', desc: 'Filtrá por tipo de espacio, región, precio y servicios.' },
-  { n: '02', title: 'Compará', desc: 'Mapa, fotos, reseñas y actividades cerca de cada lugar.' },
-  { n: '03', title: 'Reservá', desc: 'Fechas, huéspedes y confirmación en un par de clics.' },
+  {
+    n: '01',
+    title: 'Buscás',
+    desc: 'Filtrá por tipo de espacio, región, servicios y precio. El mapa te muestra todo lo que hay.',
+  },
+  {
+    n: '02',
+    title: 'Comparás',
+    desc: 'Fotos, reseñas, servicios y las rutas de trekking que tenés cerca de cada lugar.',
+  },
+  {
+    n: '03',
+    title: 'Reservás',
+    desc: 'Elegís fechas y huéspedes, y coordinás la reserva directo con el anfitrión.',
+  },
 ]
 
 export default function CTASection() {
   return (
     <>
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {steps.map((s, i) => (
-            <ScrollReveal key={s.n} delay={i * 90}>
-              <div className="rounded-3xl border border-piedra-200 bg-white p-7 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-forest-900/5">
-                <span className="font-display text-4xl font-semibold text-sand-400">{s.n}</span>
-                <h3 className="mt-3 font-display text-xl font-semibold text-cielo-950">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-piedra-500">{s.desc}</p>
-              </div>
-            </ScrollReveal>
-          ))}
+      <section className="border-t border-piedra-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-700">
+              Cómo funciona
+            </p>
+            <h2 className="mt-3 max-w-2xl text-2xl font-semibold text-cielo-950 sm:text-3xl">
+              Tres pasos y ya estás en la montaña.
+            </h2>
+          </ScrollReveal>
+
+          <div className="mt-10 grid gap-8 sm:grid-cols-3">
+            {steps.map((s, i) => (
+              <ScrollReveal key={s.n} delay={i * 90}>
+                <div className="border-t border-piedra-200 pt-5">
+                  <span className="text-xs font-semibold tabular-nums text-earth-500">{s.n}</span>
+                  <h3 className="mt-2 text-lg font-semibold text-cielo-950">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-piedra-500">{s.desc}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
-        <ScrollReveal>
-          <div className="relative overflow-hidden rounded-[2rem] bg-forest-900">
-            <img
-              src={img('1519681393784-d120267933ba', 1600)}
-              alt="Cielo estrellado sobre las sierras"
-              className="absolute inset-0 h-full w-full object-cover opacity-40"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-cielo-950/90 to-cielo-950/40" />
-            <div className="relative grid gap-8 p-10 sm:p-14 lg:grid-cols-2 lg:items-center">
-              <div>
-                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-sand-300">
-                  <span className="h-px w-8 bg-earth-400" /> ¿Tenés un espacio?
-                </p>
-                <h2 className="mt-3 font-display text-3xl font-semibold text-cream sm:text-4xl">
-                  Conectá tu lugar con miles de aventureros.
-                </h2>
-                <p className="mt-4 max-w-md text-cream/75">
-                  Publicá tu camping, cabaña o domo gratis. Nosotros nos encargamos de las reservas,
-                  cobramos solo cuando vos cobrás.
-                </p>
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <Link
-                    to="/owner"
-                    className="rounded-full bg-sand-300 px-6 py-3 text-sm font-semibold text-cielo-950 transition-colors hover:bg-sand-200"
-                  >
-                    Publicar mi espacio
-                  </Link>
-                  <Link
-                    to="/explore"
-                    className="rounded-full border border-cream/40 px-6 py-3 text-sm font-semibold text-cream transition-colors hover:border-cream"
-                  >
-                    Ver cómo funciona
-                  </Link>
-                </div>
-              </div>
+      {/* Bloque para anfitriones, con fondo que se mueve al scrollear */}
+      <section className="relative isolate overflow-hidden bg-cielo-950">
+        <img
+          src={img('1519681393784-d120267933ba', 2000)}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full -scale-y-100 object-cover opacity-35"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-cielo-950 via-cielo-950/70 to-cielo-950" />
 
-              <div className="hidden gap-4 lg:flex">
-                <div className="flex-1 rounded-2xl bg-cream/10 p-5 backdrop-blur ring-1 ring-white/15">
-                  <p className="font-display text-3xl font-semibold text-cream">0%</p>
-                  <p className="mt-1 text-xs leading-relaxed text-cream/70">
-                    costo para publicar tu espacio
-                  </p>
-                </div>
-                <div className="flex-1 rounded-2xl bg-cream/10 p-5 backdrop-blur ring-1 ring-white/15">
-                  <p className="font-display text-3xl font-semibold text-cream">X%</p>
-                  <p className="mt-1 text-xs leading-relaxed text-cream/70">
-                    solo cuando concretás una reserva
-                  </p>
-                </div>
-              </div>
+        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+          <ImageReveal className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sand-300">
+              ¿Tenés un lugar?
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-cream sm:text-3xl">
+              Publicá tu espacio y mostralo en el mapa.
+            </h2>
+            <p className="mt-4 leading-relaxed text-cream/75">
+              Camping, cabaña, refugio o lote para motorhome. Vos definís precio, disponibilidad y
+              reglas; nosotros ayudamos con las reservas y la visibilidad en el mapa.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/owner"
+                className="rounded-full bg-sand-300 px-6 py-3 text-sm font-semibold text-cielo-950 transition-colors hover:bg-sand-200"
+              >
+                Publicar mi espacio
+              </Link>
+              <Link
+                to="/explore"
+                className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-cream transition-colors hover:border-cream"
+              >
+                Ver cómo se ve
+              </Link>
             </div>
-          </div>
-        </ScrollReveal>
+          </ImageReveal>
+        </div>
       </section>
     </>
   )
