@@ -13,11 +13,26 @@ import Admin from './pages/Admin'
 import Login from './pages/Login'
 import { RutaPrivada } from './components/AuthGuard'
 
-function ScrollToTop() {
-  const { pathname } = useLocation()
+type EstadoScroll = { irA?: string } | null
+
+/**
+ * Al cambiar de ruta sube al inicio. Si la navegación trae un destino
+ * (por ejemplo Regiones o Trekkings desde el navbar) scrollea suave
+ * hasta esa sección, dejando el espacio del navbar fijo.
+ */
+function ScrollManager() {
+  const { pathname, state } = useLocation()
   useEffect(() => {
+    const destino = (state as EstadoScroll)?.irA
+    if (destino) {
+      const seccion = document.getElementById(destino)
+      if (seccion) {
+        seccion.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      }
+    }
     window.scrollTo({ top: 0, behavior: 'auto' })
-  }, [pathname])
+  }, [pathname, state])
   return null
 }
 
@@ -37,7 +52,7 @@ function NotFound() {
 export default function App() {
   return (
     <div className="flex min-h-svh flex-col bg-cream text-cielo-950">
-      <ScrollToTop />
+      <ScrollManager />
       <Navbar />
       <div className="flex flex-1 flex-col">
         <Routes>

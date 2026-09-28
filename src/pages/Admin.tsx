@@ -1,4 +1,5 @@
 import { useMemo, useState, useSyncExternalStore } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   PanelShell,
   StatGrid,
@@ -20,7 +21,7 @@ import {
   type Publicacion,
   type PublicacionEstado,
 } from '../data/panel'
-import { listarUsuarios, usuariosStore } from '../data/auth'
+import { listarUsuarios, salir, usuariosStore } from '../data/auth'
 import {
   adventureCategories,
   categoryLabel,
@@ -44,6 +45,7 @@ const tabs: { id: Tab; label: string }[] = [
 
 export default function Admin() {
   const [tab, setTab] = useState<Tab>('espacios')
+  const navigate = useNavigate()
   const [filtro, setFiltro] = useState<PublicacionEstado | 'todas'>('todas')
   const [resueltas, setResueltas] = useState<Record<string, 'aprobada' | 'rechazada'>>({})
 
@@ -451,10 +453,21 @@ export default function Admin() {
         )}
       </div>
 
-      <aside className="mt-12 rounded-2xl border border-piedra-200 bg-cream-dark/60 px-5 py-4 text-xs leading-relaxed text-piedra-600">
-        Inventario de demostración: {properties.length} espacios, {trails.length} rutas,{' '}
-        {experiences.length} experiencias y {adventureCategories.length} categorías. Cuando exista la API,
-        estas mismas listas se llenan desde el servidor.
+      <aside className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-piedra-200 bg-cream-dark/60 px-5 py-4 text-xs leading-relaxed text-piedra-600">
+        <span>
+          Inventario de demostración: {properties.length} espacios, {trails.length} rutas,{' '}
+          {experiences.length} experiencias y {adventureCategories.length} categorías. Cuando exista la API,
+          estas mismas listas se llenan desde el servidor.
+        </span>
+        <button
+          onClick={() => {
+            salir()
+            navigate('/')
+          }}
+          className="shrink-0 font-semibold text-piedra-600 underline underline-offset-4 transition-colors hover:text-cielo-950"
+        >
+          Salir de mi cuenta
+        </button>
       </aside>
     </PanelShell>
   )

@@ -1,5 +1,5 @@
 import { useMemo, useState, useSyncExternalStore } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   PanelShell,
   StatGrid,
@@ -15,6 +15,7 @@ import { publicaciones, enviarSolicitud, solicitudesStore, type EstadoSolicitud 
 import { categoryLabel, difficultyColor, properties, trails, type Property, type Trail } from '../data/demo'
 import { InboxIcon, TentIcon, WalkIcon, SparkIcon, ArrowLeftIcon, CheckIcon } from '../components/Icons'
 import { useUsuario } from '../components/AuthGuard'
+import { salir } from '../data/auth'
 
 type Tab = 'espacios' | 'rutas' | 'solicitud'
 
@@ -38,6 +39,7 @@ const solicitudEstadoClass: Record<EstadoSolicitud, string> = {
 
 export default function Owner() {
   const [tab, setTab] = useState<Tab>('espacios')
+  const navigate = useNavigate()
   const usuario = useUsuario()
   const enviados = useSyncExternalStore(solicitudesStore.subscribe, solicitudesStore.get, () => [])
 
@@ -246,10 +248,21 @@ export default function Owner() {
         <span>
           Sesión de {usuario.email} · rol {usuario.rol === 'admin' ? 'administración' : 'cliente'}
         </span>
-        <Link to="/explore" className="inline-flex items-center gap-1.5 font-semibold text-cielo-950">
-          <ArrowLeftIcon className="h-3.5 w-3.5" />
-          Volver a explorar
-        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link to="/explore" className="inline-flex items-center gap-1.5 font-semibold text-cielo-950">
+            <ArrowLeftIcon className="h-3.5 w-3.5" />
+            Volver a explorar
+          </Link>
+          <button
+            onClick={() => {
+              salir()
+              navigate('/')
+            }}
+            className="font-semibold text-piedra-600 underline underline-offset-4 transition-colors hover:text-cielo-950"
+          >
+            Salir de mi cuenta
+          </button>
+        </div>
       </aside>
     </PanelShell>
   )
