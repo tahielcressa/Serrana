@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
@@ -26,17 +26,90 @@ interface MapViewProps {
   scrollWheelZoom?: boolean
 }
 
-const TILES = {
-  mapa: {
+type ProviderKey = 'osm' | 'carto' | 'satelite'
+
+// Todos los proveedores son públicos y no piden API key. Si uno no responde,
+// el mapa salta solo al siguiente para que nunca quede en blanco.
+const PROVIDERS: Record<ProviderKey, { label: string; url: string; attribution: string; maxZoom: number; subdomains?: string; detectRetina?: boolean }> = {
+  osm: {
+    label: 'Mapa',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  },
+  carto: {
+    label: 'Relieve',
     url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 19,
+    subdomains: 'abcd',
+    detectRetina: true,
   },
   satelite: {
+    label: 'Satélite',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Imágenes &copy; Esri, Maxar, Earthstar Geographics',
+    maxZoom: 18,
   },
-} as const
+}
+
+const CHAIN: Record<ProviderKey, ProviderKey[]> = {
+  osm: ['osm', 'carto'],
+  carto: ['carto', 'osm'],
+  satelite: ['satelite', 'carto', 'osm'],
+}
+
+const MAX_TILE_ERRORS = 3
+
+function useBaseLayer(initial: ProviderKey) {
+  const [provider, setProvider] = useState<ProviderKey>(initial)
+  const [dead, setDead] = useState<ProviderKey[]>([])
+  const [respaldo, setRespaldo] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+  const errors = useRef(0)
+  const deadRef = useRef<ProviderKey[]>([])
+
+  const choose = useCallback((next: ProviderKey) => {
+    errors.current = 0
+    deadRef.current = []
+    setDead([])
+    setRespaldo(false)
+    setProvider(next)
+  }, [])
+
+  const onTileError = useCallback(() => {
+    errors.current += 1
+    if (errors.current < MAX_TILE_ERRORS) return
+    errors.current = 0
+    const caidos = deadRef.current
+    if (caidos.includes(provider)) return
+    const siguiente = CHAIN[provider].find((k) => k !== provider && !caidos.includes(k))
+    deadRef.current = [...caidos, provider]
+    setDead(deadRef.current)
+    if (siguiente) {
+      setProvider(siguiente)
+      setRespaldo(true)
+    }
+  }, [provider])
+
+  const todoCaido = (Object.keys(PROVIDERS) as ProviderKey[]).every((key) => dead.includes(key))
+
+  return {
+    provider,
+    setProvider: choose,
+    onTileError,
+    todoCaido,
+    respaldo,
+    attempt,
+    retry: () => {
+      errors.current = 0
+      deadRef.current = []
+      setDead([])
+      setAttempt((a) => a + 1)
+    },
+  }
+}
 
 const pinIcon = (label: string, active: boolean) =>
   L.divIcon({
@@ -54,10 +127,74 @@ const dotIcon = () =>
     iconAnchor: [0, 0],
   })
 
+function MapResizer() {
+  const map = useMap()
+  useEffect(() => {
+    const el = map.getContainer()
+    const observer = new ResizeObserver(() => map.invalidateSize({ animate: false }))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [map])
+  return null
+}
+
+function ZoomButtons() {
+  const map = useMap()
+  const button =
+    'flex h-8 w-8 items-center justify-center text-lg font-medium leading-none text-cielo-950 transition-colors hover:bg-piedra-100 disabled:text-piedra-300'
+  return (
+    <div className="absolute left-3 top-3 z-[500] flex flex-col overflow-hidden rounded-xl border border-piedra-200 bg-white shadow-sm">
+      <button className={button} onClick={() => map.zoomIn()} aria-label="Acercar">
+        +
+      </button>
+      <div className="h-px bg-piedra-200" />
+      <button className={button} onClick={() => map.zoomOut()} aria-label="Alejar">
+        −
+      </button>
+    </div>
+  )
+}
+
+function OfflineNotice({ onRetry }: { onRetry: () => void }) {
+  const map = useMap()
+  const c = map.getCenter()
+  const href = `https://www.openstreetmap.org/?mlat=${c.lat.toFixed(5)}&mlon=${c.lng.toFixed(5)}#map=${map.getZoom()}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}`
+  return (
+    <div className="absolute inset-0 z-[600] flex items-center justify-center bg-cream/90 p-6">
+      <div className="max-w-sm rounded-2xl border border-piedra-200 bg-white p-5 text-center shadow-sm">
+        <p className="text-sm font-semibold text-cielo-950">No se pudo cargar el mapa base</p>
+        <p className="mt-1.5 text-sm text-piedra-600">
+          Tu conexión o un bloqueo del navegador están impediendo descargar los mapas. Podés abrir la
+          ubicación en OpenStreetMap o reintentar.
+        </p>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <button
+            onClick={onRetry}
+            className="rounded-full bg-cielo-950 px-4 py-2 text-sm font-semibold text-cream transition-transform hover:scale-[1.03]"
+          >
+            Reintentar
+          </button>
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full border border-piedra-300 px-4 py-2 text-sm font-semibold text-cielo-950 transition-colors hover:border-cielo-950"
+          >
+            Abrir en OSM
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function FitBounds({ items }: { items: MapItem[] }) {
   const map = useMap()
   useEffect(() => {
     if (!items.length) return
+    // Leaflet puede medir el contenedor antes de que tenga tamaño final
+    // (por ejemplo en la vista lista/mapa del móvil): forzamos el recálculo.
+    map.invalidateSize({ animate: false })
     const bounds = L.latLngBounds(items.map((i) => i.position))
     map.fitBounds(bounds, { padding: [56, 56], maxZoom: 12 })
   }, [map, items])
@@ -110,39 +247,55 @@ function SearchArea({ onSearch }: { onSearch?: () => void }) {
   )
 }
 
-function LayerToggle({ mode, onChange }: { mode: 'mapa' | 'satelite'; onChange: (m: 'mapa' | 'satelite') => void }) {
+function LayerToggle({ mode, onChange }: { mode: ProviderKey; onChange: (m: ProviderKey) => void }) {
   return (
     <div className="absolute right-3 top-3 z-[500] flex overflow-hidden rounded-full border border-piedra-200 bg-white shadow-sm">
-      <button
-        onClick={() => onChange('mapa')}
-        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors ${
-          mode === 'mapa' ? 'bg-cielo-950 text-cream' : 'text-piedra-700 hover:bg-piedra-100'
-        }`}
-      >
-        <LayersIcon className="h-3.5 w-3.5" /> Mapa
-      </button>
-      <button
-        onClick={() => onChange('satelite')}
-        className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
-          mode === 'satelite' ? 'bg-cielo-950 text-cream' : 'text-piedra-700 hover:bg-piedra-100'
-        }`}
-      >
-        Satélite
-      </button>
+      {(Object.keys(PROVIDERS) as ProviderKey[]).map((key, index) => (
+        <button
+          key={key}
+          onClick={() => onChange(key)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors ${
+            mode === key ? 'bg-cielo-950 text-cream' : 'text-piedra-700 hover:bg-piedra-100'
+          } ${index > 0 ? 'border-l border-piedra-200' : ''}`}
+        >
+          {index === 0 ? <LayersIcon className="h-3.5 w-3.5" /> : null}
+          {PROVIDERS[key].label}
+        </button>
+      ))}
     </div>
   )
 }
 
-function BaseTiles({ mode }: { mode: 'mapa' | 'satelite' }) {
-  const tile = TILES[mode]
+function BaseTiles({
+  provider,
+  onTileError,
+  attempt,
+}: {
+  provider: ProviderKey
+  onTileError: () => void
+  attempt: number
+}) {
+  const tile = PROVIDERS[provider]
+  const eventHandlers = useMemo(() => ({ tileerror: onTileError }), [onTileError])
   return (
     <TileLayer
-      key={mode}
+      key={`${provider}-${attempt}`}
       url={tile.url}
       attribution={tile.attribution}
-      subdomains={mode === 'mapa' ? ['a', 'b', 'c', 'd'] : undefined}
-      maxZoom={19}
+      subdomains={tile.subdomains}
+      maxZoom={tile.maxZoom}
+      detectRetina={tile.detectRetina}
+      eventHandlers={eventHandlers}
     />
+  )
+}
+
+function ProviderNote({ respaldo }: { respaldo: boolean }) {
+  if (!respaldo) return null
+  return (
+    <p className="absolute bottom-6 left-3 z-[500] rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-piedra-600 shadow-sm">
+      El proveedor anterior no respondió: se muestra el mapa de respaldo.
+    </p>
   )
 }
 
@@ -155,11 +308,11 @@ export default function MapView({
   onSearchArea,
   scrollWheelZoom = true,
 }: MapViewProps) {
-  const [mode, setMode] = useState<'mapa' | 'satelite'>('mapa')
+  const tiles = useBaseLayer('osm')
   const center = useMemo<[number, number]>(() => items[0]?.position ?? [-31.7, -64.6], [items])
 
   return (
-    <div className={`relative isolate ${className}`}>
+    <div className={`relative isolate min-h-[320px] ${className}`}>
       <MapContainer
         center={center}
         zoom={10}
@@ -168,7 +321,9 @@ export default function MapView({
         zoomControl={false}
         className="h-full w-full"
       >
-        <BaseTiles mode={mode} />
+        <BaseTiles provider={tiles.provider} onTileError={tiles.onTileError} attempt={tiles.attempt} />
+        <MapResizer />
+        <ZoomButtons />
         <FitBounds items={items} />
         <FocusFly focus={focus} />
         <SearchArea onSearch={onSearchArea} />
@@ -202,13 +357,16 @@ export default function MapView({
             </Popup>
           </Marker>
         ))}
+
+        {tiles.todoCaido ? <OfflineNotice onRetry={tiles.retry} /> : null}
       </MapContainer>
-      <LayerToggle mode={mode} onChange={setMode} />
+      <LayerToggle mode={tiles.provider} onChange={tiles.setProvider} />
+      <ProviderNote respaldo={tiles.respaldo} />
     </div>
   )
 }
 
-function Polyline({ points }: { points: [number, number][] }) {
+function RouteLine({ points }: { points: [number, number][] }) {
   const map = useMap()
   useEffect(() => {
     const line = L.polyline(points, {
@@ -240,22 +398,26 @@ export function SinglePinMap({
   trail?: [number, number][]
   children?: ReactNode
 }) {
-  const [mode, setMode] = useState<'mapa' | 'satelite'>('mapa')
+  const tiles = useBaseLayer('osm')
   return (
-    <div className={`relative isolate overflow-hidden ${className}`}>
+    <div className={`relative isolate min-h-[280px] overflow-hidden ${className}`}>
       <MapContainer
         center={position}
         zoom={zoom}
         zoomControl={false}
-        scrollWheelZoom={false}
+        scrollWheelZoom={Boolean(children)}
         dragging={Boolean(children)}
         className="h-full w-full"
       >
-        <BaseTiles mode={mode} />
-        {trail?.length ? <Polyline points={trail} /> : null}
+        <BaseTiles provider={tiles.provider} onTileError={tiles.onTileError} attempt={tiles.attempt} />
+        <MapResizer />
+        <ZoomButtons />
+        {trail?.length ? <RouteLine points={trail} /> : null}
         <Marker position={position} icon={label ? pinIcon(label, true) : dotIcon()} />
+        {tiles.todoCaido ? <OfflineNotice onRetry={tiles.retry} /> : null}
       </MapContainer>
-      <LayerToggle mode={mode} onChange={setMode} />
+      <LayerToggle mode={tiles.provider} onChange={tiles.setProvider} />
+      <ProviderNote respaldo={tiles.respaldo} />
     </div>
   )
 }

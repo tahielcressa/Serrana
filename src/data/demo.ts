@@ -150,8 +150,8 @@ export const properties: Property[] = [
     image: img('1537565266759-34bbc16be345', 1000),
     images: [
       img('1537565266759-34bbc16be345', 1400),
-      img('1519424183297-2cf4c8608215', 1000),
-      img('1493963379067-3705a755c74e', 1000),
+      img('1519681393784-d120267933ba', 1000),
+      img('1504280390367-361c6d9f38f4', 1000),
     ],
     description:
       'Un domo geodésico con paredes de vidrio que despierta entre bosques de pinos. Fogón exterior, hamacas y el cielo cordobés más oscuro a metros del refugio.',
@@ -244,8 +244,8 @@ export const properties: Property[] = [
     reviews: 74,
     capacity: 2,
     beds: 1,
-    image: img('1527004013197-933c4bb621b8', 1000),
-    images: [img('1527004013197-933c4bb621b8', 1400), img('1508873696983-2dfd5898f08b', 1000)],
+    image: img('1518780664697-55e3ad937233', 1000),
+    images: [img('1518780664697-55e3ad937233', 1400), img('1508873696983-2dfd5898f08b', 1000)],
     description:
       'Minicasa nórdica en medio de un bosque de molles. Terraza con vista, cocina completa y río a 600 metros por una huella de tierra.',
     features: ['Cocina', 'Wi-Fi', 'Hidromasaje', 'Estacionamiento', 'Pet friendly'],
@@ -474,7 +474,7 @@ export const trails: Trail[] = [
     maxAltitude: 1450,
     rating: 4.7,
     reviews: 70,
-    image: img('1464822611617-05d34a245dab', 1000),
+    image: img('1501854140801-50d01698950b', 1000),
     description:
       'Paisajes ondulados al sur, con baja concurrencia y silencio total. El trekking para quienes buscan soledad.',
     terrain: ['Sendero', 'Pastizal'],
@@ -532,7 +532,7 @@ export const experiences: Experience[] = [
     price: 55,
     durationH: 4,
     rating: 4.8,
-    image: img('1458442310121-dde6eebf2c41', 1000),
+    image: img('1448375240586-882707db888b', 1000),
     description: 'Vías para todos los niveles sobre las paredes de granito más famosas de Córdoba.',
     emoji: '🧗',
     coordinates: [-31.37, -64.79],
@@ -545,7 +545,7 @@ export const experiences: Experience[] = [
     price: 35,
     durationH: 4,
     rating: 4.5,
-    image: img('1500475325023-37b63fbd35a2', 1000),
+    image: img('1473448912268-2022ce9509d8', 1000),
     description: 'Pesca deportiva con guía, equipo incluido y costa tranquila garantizada.',
     emoji: '🎣',
     coordinates: [-32.06, -64.5],

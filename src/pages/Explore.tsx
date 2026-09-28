@@ -199,7 +199,7 @@ export default function Explore() {
       </div>
 
       {/* Lista + mapa */}
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         <section
           ref={listRef}
           className={`min-h-0 flex-1 overflow-y-auto px-4 pb-10 pt-4 sm:px-6 lg:block ${
@@ -235,8 +235,8 @@ export default function Explore() {
         </section>
 
         <aside
-          className={`min-h-0 w-full shrink-0 lg:block lg:w-[46%] xl:w-[44%] ${
-            mobileView === 'mapa' ? 'block' : 'hidden'
+          className={`h-full min-h-0 w-full shrink-0 lg:block lg:w-[46%] xl:w-[44%] ${
+            mobileView === 'mapa' ? 'absolute inset-0 z-10 block lg:relative' : 'hidden'
           }`}
         >
           <MapView
