@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { MenuIcon, CloseIcon, UserIcon } from './Icons'
+import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { MenuIcon, CloseIcon, UserIcon, TentIcon, UsersIcon } from './Icons'
 import { ScrollProgress } from './Scroll'
 
 const links = [
@@ -9,10 +9,29 @@ const links = [
   { to: '/#trekkings', label: 'Trekkings' },
 ]
 
+// Las dos entradas que se abren desde el ícono de perfil.
+const paneles = [
+  {
+    to: '/owner',
+    label: 'Panel del cliente',
+    desc: 'Cargar y seguir mis espacios y rutas',
+    Icon: TentIcon,
+  },
+  {
+    to: '/admin',
+    label: 'Administración',
+    desc: 'Ver solicitudes, cuentas y publicaciones',
+    Icon: UsersIcon,
+  },
+]
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [cuenta, setCuenta] = useState(false)
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const cuentaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -20,6 +39,29 @@ export default function Navbar() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  // Al cambiar de ruta se cierran los dos menús.
+  useEffect(() => {
+    setOpen(false)
+    setCuenta(false)
+  }, [pathname])
+
+  // Cierra el menú de cuenta al hacer clic afuera o presionar Escape.
+  useEffect(() => {
+    if (!cuenta) return
+    const onClick = (e: MouseEvent) => {
+      if (cuentaRef.current && !cuentaRef.current.contains(e.target as Node)) setCuenta(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setCuenta(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [cuenta])
 
   const solid = scrolled || open
 
@@ -76,17 +118,49 @@ export default function Navbar() {
             >
               Publicá tu espacio
             </button>
-            <button
-              onClick={() => navigate('/profile')}
-              aria-label="Mi perfil"
-              className={`ml-1 grid h-9 w-9 place-items-center rounded-full transition-colors ${
-                solid
-                  ? 'text-piedra-700 hover:bg-piedra-100 hover:text-cielo-950'
-                  : 'text-cream hover:bg-white/10'
-              }`}
-            >
-              <UserIcon className="h-5 w-5" />
-            </button>
+            <div className="relative ml-1" ref={cuentaRef}>
+              <button
+                onClick={() => setCuenta((v) => !v)}
+                aria-label="Mi cuenta"
+                aria-expanded={cuenta}
+                aria-haspopup="menu"
+                className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${
+                  solid
+                    ? 'text-piedra-700 hover:bg-piedra-100 hover:text-cielo-950'
+                    : 'text-cream hover:bg-white/10'
+                }`}
+              >
+                <UserIcon className="h-5 w-5" />
+              </button>
+
+              {cuenta && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-11 z-50 w-72 overflow-hidden rounded-2xl border border-piedra-200 bg-white shadow-lg"
+                >
+                  <p className="border-b border-piedra-200 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-piedra-500">
+                    Entrar a un panel
+                  </p>
+                  {paneles.map(({ to, label, desc, Icon }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      role="menuitem"
+                      onClick={() => setCuenta(false)}
+                      className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-cream-dark"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-cielo-950 text-cream">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-cielo-950">{label}</span>
+                        <span className="block text-xs text-piedra-500">{desc}</span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           <button
@@ -122,15 +196,25 @@ export default function Navbar() {
               >
                 Publicá tu espacio
               </button>
-              <button
-                onClick={() => {
-                  setOpen(false)
-                  navigate('/admin')
-                }}
-                className="mt-1 rounded-lg px-3 py-2.5 text-sm font-semibold text-cielo-950"
-              >
-                Panel de la plataforma
-              </button>
+              <p className="mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-piedra-500">
+                Entrar a un panel
+              </p>
+              {paneles.map(({ to, label, desc, Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setOpen(false)}
+                  className="mt-1 flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-piedra-100"
+                >
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-cielo-950 text-cream">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-cielo-950">{label}</span>
+                    <span className="block text-xs text-piedra-500">{desc}</span>
+                  </span>
+                </Link>
+              ))}
             </div>
           </nav>
         )}
