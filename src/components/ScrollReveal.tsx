@@ -15,11 +15,13 @@ function useReveal<T extends HTMLElement>(className: string, threshold = 0.12) {
     const node = ref.current
     if (!node) return
 
+    const reveal = () => node.classList.add('is-visible')
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return
-          node.classList.add('is-visible')
+          reveal()
           observer.unobserve(node)
         })
       },
@@ -27,7 +29,18 @@ function useReveal<T extends HTMLElement>(className: string, threshold = 0.12) {
     )
 
     observer.observe(node)
-    return () => observer.disconnect()
+
+    // Red de seguridad: si el observer no dispara, mostramos lo que ya esté
+    // en pantalla. Nunca dejamos texto o fotos en opacity 0 para siempre.
+    const safety = window.setTimeout(() => {
+      const box = node.getBoundingClientRect()
+      if (box.top < window.innerHeight && box.bottom > 0) reveal()
+    }, 2000)
+
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(safety)
+    }
   }, [threshold])
 
   return { ref, className }
@@ -44,13 +57,23 @@ export function ScrollReveal({ children, className = '', delay = 0, as: Tag = 'd
   )
 }
 
-/** Barrido de la imagen de arriba hacia abajo. */
+/**
+ * Barrido de la imagen de arriba hacia abajo.
+ *
+ * El recorte (clip-path) va en un hijo interno y no en el elemento observado:
+ * si el elemento que mira el IntersectionObserver estuviera recortado al 0%,
+ * nunca se consideraría visible y el reveal no se dispararía nunca.
+ */
 export function ImageReveal({ children, className = '', delay = 0 }: Omit<RevealProps, 'as' | 'variant'>) {
   const { ref, className: revealClass } = useReveal<HTMLDivElement>('reveal-img', 0.05)
 
   return (
-    <div ref={ref} className={`${revealClass} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
-      {children}
+    <div
+      ref={ref}
+      className={`${revealClass} relative ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      <div className="reveal-img-clip absolute inset-0">{children}</div>
     </div>
   )
 }

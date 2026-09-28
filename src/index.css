@@ -112,12 +112,15 @@ h3 {
   transform: none;
 }
 
-/* barrido de imagen al entrar */
-.reveal-img {
+/* Barrido de imagen al entrar.
+   El clip-path va en un hijo interno (.reveal-img-clip) porque el nodo que
+   observa el IntersectionObserver no puede estar recortado: si lo estuviera,
+   su área visible sería 0 y la animación no se dispararía jamás. */
+.reveal-img-clip {
   clip-path: inset(0 0 100% 0);
   transition: clip-path 1.1s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.reveal-img.is-visible {
+.reveal-img.is-visible .reveal-img-clip {
   clip-path: inset(0 0 0 0);
 }
 
@@ -319,7 +322,8 @@ h3 {
     scroll-behavior: auto;
   }
   .reveal,
-  .reveal-img {
+  .reveal-img,
+  .reveal-img-clip {
     opacity: 1;
     transform: none;
     clip-path: none;

@@ -3,8 +3,10 @@
 // Sirven para maquetar la interfaz; se reemplazan por la API cuando exista.
 // ============================================================
 
-export const img = (id: string, w = 900) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`
+// Las fotos viven en /public/img: se sirven desde el mismo sitio, así no
+// dependen de que un CDN externo (Unsplash) esté disponible para el visitante.
+// El id es el nombre del archivo (foto-<id>.jpg).
+export const img = (id: string, _w = 900) => `${import.meta.env.BASE_URL}img/${id}.jpg`
 
 // ---------- Tipos ----------
 export type PropertyCategory =
