@@ -8,6 +8,8 @@ import Property from './pages/Property'
 import Trail from './pages/Trail'
 import Experience from './pages/Experience'
 import Placeholder from './pages/Placeholder'
+import Owner from './pages/Owner'
+import Admin from './pages/Admin'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -45,8 +47,8 @@ export default function App() {
           <Route path="/favorites" element={<Placeholder page="favorites" />} />
           <Route path="/trips" element={<Placeholder page="trips" />} />
           <Route path="/profile" element={<Placeholder page="profile" />} />
-          <Route path="/owner" element={<Placeholder page="owner" />} />
-          <Route path="/admin" element={<Placeholder page="admin" />} />
+          <Route path="/owner" element={<Owner />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

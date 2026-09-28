@@ -122,6 +122,15 @@ export default function Navbar() {
               >
                 Publicá tu espacio
               </button>
+              <button
+                onClick={() => {
+                  setOpen(false)
+                  navigate('/admin')
+                }}
+                className="mt-1 rounded-lg px-3 py-2.5 text-sm font-semibold text-cielo-950"
+              >
+                Panel de la plataforma
+              </button>
             </div>
           </nav>
         )}

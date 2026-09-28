@@ -49,7 +49,8 @@ export default function Footer() {
             <h4 className="text-sm font-semibold uppercase tracking-wider text-cream">Para dueños</h4>
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link className="text-piedra-400 hover:text-cream" to="/owner">Publicar mi espacio</Link></li>
-              <li><Link className="text-piedra-400 hover:text-cream" to="/owner">Dashboard</Link></li>
+              <li><Link className="text-piedra-400 hover:text-cream" to="/owner">Mi panel</Link></li>
+              <li><Link className="text-piedra-400 hover:text-cream" to="/admin">Panel de la plataforma</Link></li>
               <li><span className="text-piedra-400">hola@serrana.travel</span></li>
             </ul>
           </div>

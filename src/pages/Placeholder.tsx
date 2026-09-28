@@ -16,16 +16,6 @@ const pages: Record<string, { title: string; desc: string; status: string }> = {
     desc: 'Tus datos, tus reseñas y los lugares que ya visitaste.',
     status: 'En desarrollo',
   },
-  owner: {
-    title: 'Panel de propietarios',
-    desc: 'Publicá tu espacio, definí disponibilidad, recibí solicitudes de reserva y seguí tus ingresos.',
-    status: 'Próximamente',
-  },
-  admin: {
-    title: 'Panel administrativo',
-    desc: 'Gestión de usuarios, alojamientos, rutas, reservas y reportes de la plataforma.',
-    status: 'Próximamente',
-  },
 }
 
 export default function Placeholder({ page }: { page: string }) {

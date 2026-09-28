@@ -144,3 +144,48 @@ export const SparkIcon = ({ className = 'h-5 w-5' }: IconProps) => (
     <path d="m12 3 2.2 5.6L20 11l-5.8 2.4L12 19l-2.2-5.6L4 11l5.8-2.4L12 3Z" />
   </svg>
 )
+
+export const CheckIcon = ({ className = 'h-4 w-4' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+    <path d="m4 12.5 5 5L20 6.5" />
+  </svg>
+)
+
+export const PlusIcon = ({ className = 'h-4 w-4' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+)
+
+export const InboxIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M3 13h4l1.5 3h7L17 13h4" />
+    <path d="M5.5 5h13l2.5 8v6H3v-6l2.5-8Z" />
+  </svg>
+)
+
+export const UsersIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M2.5 20c0-3.3 2.9-5.2 6.5-5.2s6.5 1.9 6.5 5.2" />
+    <path d="M16 5.2a3.5 3.5 0 0 1 0 6.6M18 14.5c2.2.5 3.5 2 3.5 4.5" />
+  </svg>
+)
+
+export const EditIcon = ({ className = 'h-4 w-4' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M4 20h4L19 9a2.5 2.5 0 0 0-3.5-3.5L4.5 16.5 4 20Z" />
+  </svg>
+)
+
+export const TrashIcon = ({ className = 'h-4 w-4' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" />
+  </svg>
+)
+
+export const ArrowLeftIcon = ({ className = 'h-4 w-4' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M20 12H4M10 6l-6 6 6 6" />
+  </svg>
+)
