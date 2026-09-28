@@ -1,23 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom'
 import './index.css'
 import App from './App'
 
-const base = import.meta.env.BASE_URL
-
-// GitHub Pages no resuelve el index.html para subrutas de un proyecto site.
-// El 404.html del user site redirige acá con ?_redirect=/explore y lo restauramos
-// para que React Router monte en la ruta correcta con la URL limpia.
-const redirect = new URLSearchParams(window.location.search).get('_redirect')
-if (redirect) {
-  window.history.replaceState(null, '', base + redirect.replace(/^\/+/, ''))
-}
-
+// HashRouter: GitHub Pages no sirve el index.html para rutas profundas de un
+// proyecto site (el 404.html no se aplica), y con hash el servidor nunca
+// necesita resolver la ruta. Ej: /Serrana/#/explore
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter basename={base}>
+    <HashRouter>
       <App />
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 )
