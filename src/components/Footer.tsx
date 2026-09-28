@@ -51,6 +51,7 @@ export default function Footer() {
               <li><Link className="text-piedra-400 hover:text-cream" to="/owner">Publicar mi espacio</Link></li>
               <li><Link className="text-piedra-400 hover:text-cream" to="/owner">Mi panel</Link></li>
               <li><Link className="text-piedra-400 hover:text-cream" to="/admin">Panel de la plataforma</Link></li>
+              <li><Link className="text-piedra-400 hover:text-cream" to="/login">Crear cuenta</Link></li>
               <li><span className="text-piedra-400">hola@serrana.travel</span></li>
             </ul>
           </div>

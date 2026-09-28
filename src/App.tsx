@@ -10,6 +10,8 @@ import Experience from './pages/Experience'
 import Placeholder from './pages/Placeholder'
 import Owner from './pages/Owner'
 import Admin from './pages/Admin'
+import Login from './pages/Login'
+import { RutaPrivada } from './components/AuthGuard'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -46,9 +48,23 @@ export default function App() {
           <Route path="/experience/:id" element={<Experience />} />
           <Route path="/favorites" element={<Placeholder page="favorites" />} />
           <Route path="/trips" element={<Placeholder page="trips" />} />
-          <Route path="/profile" element={<Placeholder page="profile" />} />
-          <Route path="/owner" element={<Owner />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/owner"
+            element={
+              <RutaPrivada>
+                <Owner />
+              </RutaPrivada>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RutaPrivada rol="admin">
+                <Admin />
+              </RutaPrivada>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

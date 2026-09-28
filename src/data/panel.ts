@@ -142,3 +142,69 @@ export const estadoClass: Record<PublicacionEstado, string> = {
 }
 
 export const cuentaById = (id: string) => cuentas.find((c) => c.id === id)
+
+// ============================================================
+// Solicitudes que mandan los usuarios desde su panel de cliente.
+// Se guardan en el navegador y aparecen en la pestaña
+// "Solicitudes" del panel de administración.
+// ============================================================
+
+export type EstadoSolicitud = 'pendiente' | 'aprobada' | 'rechazada'
+
+export interface SolicitudEnviada {
+  id: string
+  usuarioId: string
+  nombre: string
+  email: string
+  tipo: PublicacionTipo
+  region: string
+  lugar: string
+  mensaje: string
+  fecha: string
+  estado: EstadoSolicitud
+}
+
+const SOLIC_KEY = 'serrana:solicitudes'
+
+const oyentes = new Set<() => void>()
+let cache: SolicitudEnviada[] | null = null
+
+function leerEnviadas(): SolicitudEnviada[] {
+  if (cache) return cache
+  try {
+    const raw = window.localStorage.getItem(SOLIC_KEY)
+    cache = raw ? (JSON.parse(raw) as SolicitudEnviada[]) : []
+  } catch {
+    cache = []
+  }
+  return cache
+}
+
+function guardarEnviadas(lista: SolicitudEnviada[]) {
+  cache = lista
+  window.localStorage.setItem(SOLIC_KEY, JSON.stringify(lista))
+  oyentes.forEach((f) => f())
+}
+
+export function enviarSolicitud(datos: Omit<SolicitudEnviada, 'id' | 'fecha' | 'estado'>) {
+  const nueva: SolicitudEnviada = {
+    ...datos,
+    id: `sol-${Date.now().toString(36)}`,
+    fecha: new Date().toISOString().slice(0, 10),
+    estado: 'pendiente',
+  }
+  guardarEnviadas([nueva, ...leerEnviadas()])
+  return nueva
+}
+
+export function resolverSolicitud(id: string, estado: EstadoSolicitud) {
+  guardarEnviadas(leerEnviadas().map((s) => (s.id === id ? { ...s, estado } : s)))
+}
+
+export const solicitudesStore = {
+  get: leerEnviadas,
+  subscribe: (f: () => void) => {
+    oyentes.add(f)
+    return () => oyentes.delete(f)
+  },
+}
