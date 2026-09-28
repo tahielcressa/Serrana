@@ -30,12 +30,18 @@ type ProviderKey = 'osm' | 'carto' | 'satelite'
 
 // Todos los proveedores son públicos y no piden API key. Si uno no responde,
 // el mapa salta solo al siguiente para que nunca quede en blanco.
-const PROVIDERS: Record<ProviderKey, { label: string; url: string; attribution: string; maxZoom: number; subdomains?: string; detectRetina?: boolean }> = {
+// Importante: `subdomains` siempre tiene que ser string o array. Si llega
+// undefined, Leaflet revienta al armar la URL del tile (usa subdomains.length).
+const PROVIDERS: Record<
+  ProviderKey,
+  { label: string; url: string; attribution: string; maxZoom: number; subdomains: string; detectRetina?: boolean }
+> = {
   osm: {
     label: 'Mapa',
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
+    subdomains: 'abc',
   },
   carto: {
     label: 'Relieve',
@@ -51,6 +57,7 @@ const PROVIDERS: Record<ProviderKey, { label: string; url: string; attribution: 
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Imágenes &copy; Esri, Maxar, Earthstar Geographics',
     maxZoom: 18,
+    subdomains: 'abc',
   },
 }
 
@@ -282,7 +289,7 @@ function BaseTiles({
       key={`${provider}-${attempt}`}
       url={tile.url}
       attribution={tile.attribution}
-      subdomains={tile.subdomains}
+      subdomains={tile.subdomains ?? 'abc'}
       maxZoom={tile.maxZoom}
       detectRetina={tile.detectRetina}
       eventHandlers={eventHandlers}
