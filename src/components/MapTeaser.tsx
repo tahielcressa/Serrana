@@ -1,37 +1,53 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router-dom'
 import { properties, trails, categoryLabel } from '../data/demo'
+import { publicadas, publicacionesStore } from '../data/publicaciones'
 import MapView, { type MapItem } from './MapView'
+import { aMapItem } from './mapItems'
 import { TentIcon, WalkIcon, ChevronRightIcon } from './Icons'
 import { SectionHeader } from './ui'
 
+/** Los lugares que subieron los clientes y aprobamos, ya con pin. */
+function useCargadas(tipo: 'espacio' | 'ruta') {
+  const todas = useSyncExternalStore(publicacionesStore.subscribe, publicacionesStore.get, () => [])
+  return useMemo(() => publicadas().filter((p) => p.tipo === tipo && p.coordenadas), [todas, tipo])
+}
+
 export default function MapTeaser() {
   const [mode, setMode] = useState<'alojamientos' | 'trekkings'>('alojamientos')
+  const cargadasEspacios = useCargadas('espacio')
+  const cargadasRutas = useCargadas('ruta')
 
   const items: MapItem[] = useMemo(
     () =>
       mode === 'alojamientos'
-        ? properties.map((p) => ({
-            id: p.id,
-            position: p.coordinates,
-            label: `$${p.pricePerNight}`,
-            title: p.name,
-            subtitle: `${categoryLabel[p.category]} · ${p.location}`,
-            meta: p.rating.toFixed(1),
-            image: p.image,
-            href: `/property/${p.id}`,
-          }))
-        : trails.map((t) => ({
-            id: t.id,
-            position: t.coordinates,
-            label: `${t.distanceKm} km`,
-            title: t.name,
-            subtitle: t.location,
-            meta: t.rating.toFixed(1),
-            image: t.image,
-            href: `/trail/${t.id}`,
-          })),
-    [mode],
+        ? [
+            ...properties.map((p) => ({
+              id: p.id,
+              position: p.coordinates,
+              label: `$${p.pricePerNight}`,
+              title: p.name,
+              subtitle: `${categoryLabel[p.category]} · ${p.location}`,
+              meta: p.rating.toFixed(1),
+              image: p.image,
+              href: `/property/${p.id}`,
+            })),
+            ...cargadasEspacios.map(aMapItem),
+          ]
+        : [
+            ...trails.map((t) => ({
+              id: t.id,
+              position: t.coordinates,
+              label: `${t.distanceKm} km`,
+              title: t.name,
+              subtitle: t.location,
+              meta: t.rating.toFixed(1),
+              image: t.image,
+              href: `/trail/${t.id}`,
+            })),
+            ...cargadasRutas.map(aMapItem),
+          ],
+    [mode, cargadasEspacios, cargadasRutas],
   )
 
   return (

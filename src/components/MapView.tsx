@@ -390,6 +390,89 @@ function RouteLine({ points }: { points: [number, number][] }) {
   return null
 }
 
+/** Reencuadra el mapa cuando cambia el punto elegido. */
+function Recenter({ position, zoom }: { position: [number, number] | null; zoom: number }) {
+  const map = useMap()
+  useEffect(() => {
+    if (position) map.setView(position, Math.max(map.getZoom(), zoom), { animate: true })
+  }, [position, zoom, map])
+  return null
+}
+
+const draftIcon = () =>
+  L.divIcon({
+    className: 'serrana-pin-wrap serrana-pin-draft',
+    html: '<span class="serrana-dot is-draft"></span>',
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  })
+
+/**
+ * Mapa para que el usuario marque dónde queda su lugar o por dónde
+ * pasa su ruta. Un clic sobre el mapa deja el pin donde se hizo.
+ */
+export function LocationPicker({
+  value,
+  onChange,
+  className = '',
+  zoom = 11,
+}: {
+  value: [number, number] | null
+  onChange: (position: [number, number]) => void
+  className?: string
+  zoom?: number
+}) {
+  const tiles = useBaseLayer('osm')
+  const center: [number, number] = value ?? [-31.7, -64.6]
+
+  return (
+    <div className={`relative isolate min-h-[280px] overflow-hidden ${className}`}>
+      <MapContainer
+        center={center}
+        zoom={zoom}
+        zoomControl={false}
+        scrollWheelZoom={false}
+        className="h-full w-full cursor-crosshair"
+      >
+        <BaseTiles provider={tiles.provider} onTileError={tiles.onTileError} attempt={tiles.attempt} />
+        <MapResizer />
+        <ZoomButtons />
+        <Recenter position={value} zoom={zoom} />
+        {value ? (
+          <Marker
+            position={value}
+            icon={draftIcon()}
+            draggable
+            eventHandlers={{
+              dragend: (e) => {
+                const { lat, lng } = e.target.getLatLng()
+                onChange([Number(lat.toFixed(6)), Number(lng.toFixed(6))])
+              },
+            }}
+          />
+        ) : null}
+        <MapClickHandler onChange={onChange} />
+        {tiles.todoCaido ? <OfflineNotice onRetry={tiles.retry} /> : null}
+      </MapContainer>
+      <LayerToggle mode={tiles.provider} onChange={tiles.setProvider} />
+    </div>
+  )
+}
+
+function MapClickHandler({ onChange }: { onChange: (position: [number, number]) => void }) {
+  const map = useMap()
+  useEffect(() => {
+    const onClick = (e: L.LeafletMouseEvent) => {
+      onChange([Number(e.latlng.lat.toFixed(6)), Number(e.latlng.lng.toFixed(6))])
+    }
+    map.on('click', onClick)
+    return () => {
+      map.off('click', onClick)
+    }
+  }, [map, onChange])
+  return null
+}
+
 export function SinglePinMap({
   position,
   label,

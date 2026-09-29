@@ -242,6 +242,35 @@ h3 {
   box-shadow: 0 2px 6px rgba(11, 20, 29, 0.3);
 }
 
+.serrana-dot.is-draft {
+  width: 19px;
+  height: 19px;
+  background: var(--color-earth-500, #b4693e);
+  border-color: #fff;
+  box-shadow: 0 0 0 4px rgba(180, 105, 62, 0.28);
+  cursor: grab;
+}
+
+/* El pin que se arrastra necesita un área real: Leaflet solo captura
+   el arrastre sobre el elemento del icono, y con tamaño 0 no recibe
+   eventos de puntero. */
+.serrana-pin-wrap.serrana-pin-draft {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 0;
+}
+
+.serrana-pin-draft .serrana-dot.is-draft {
+  top: 50%;
+  left: 50%;
+}
+
+.serrana-pin-draft .serrana-dot.is-draft:active {
+  cursor: grabbing;
+}
+
 .leaflet-popup-content-wrapper {
   padding: 0;
   border-radius: 14px;

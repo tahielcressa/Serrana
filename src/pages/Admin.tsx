@@ -23,6 +23,13 @@ import {
 } from '../data/panel'
 import { listarUsuarios, salir, usuariosStore } from '../data/auth'
 import {
+  cambiarEstadoPublicacion,
+  estadoPublicacionClass,
+  estadoPublicacionLabel,
+  publicacionesStore,
+  type Publicacion as PublicacionReal,
+} from '../data/publicaciones'
+import {
   adventureCategories,
   categoryLabel,
   difficultyColor,
@@ -32,11 +39,12 @@ import {
   type Property,
   type Trail,
 } from '../data/demo'
-import { TentIcon, WalkIcon, SparkIcon, CheckIcon, CloseIcon } from '../components/Icons'
+import { TentIcon, WalkIcon, SparkIcon, CheckIcon, CloseIcon, PinIcon } from '../components/Icons'
 
-type Tab = 'espacios' | 'rutas' | 'cuentas' | 'solicitudes'
+type Tab = 'cargadas' | 'espacios' | 'rutas' | 'cuentas' | 'solicitudes'
 
 const tabs: { id: Tab; label: string }[] = [
+  { id: 'cargadas', label: 'Cargadas por usuarios' },
   { id: 'espacios', label: 'Espacios' },
   { id: 'rutas', label: 'Rutas' },
   { id: 'cuentas', label: 'Cuentas' },
@@ -44,17 +52,18 @@ const tabs: { id: Tab; label: string }[] = [
 ]
 
 export default function Admin() {
-  const [tab, setTab] = useState<Tab>('espacios')
+  const [tab, setTab] = useState<Tab>('cargadas')
   const navigate = useNavigate()
   const [filtro, setFiltro] = useState<PublicacionEstado | 'todas'>('todas')
   const [resueltas, setResueltas] = useState<Record<string, 'aprobada' | 'rechazada'>>({})
+  const [nota, setNota] = useState<Record<string, string>>({})
 
   const enviadas = useSyncExternalStore(solicitudesStore.subscribe, solicitudesStore.get, () => [])
   const versionUsuarios = useSyncExternalStore(usuariosStore.subscribe, usuariosStore.get, () => 0)
-  const registrados = useMemo(
-    () => listarUsuarios().filter((u) => u.rol === 'cliente'),
-    [versionUsuarios],
-  )
+  const registradas = useMemo(() => listarUsuarios().filter((u) => u.rol === 'cliente'), [versionUsuarios])
+
+  const cargadas = useSyncExternalStore(publicacionesStore.subscribe, publicacionesStore.get, () => [])
+  const porRevisar = cargadas.filter((p) => p.estado === 'revision')
 
   const espacios = useMemo(
     () =>
@@ -83,12 +92,12 @@ export default function Admin() {
   const resumen = useMemo(() => {
     const porEstado = (e: PublicacionEstado) => publicaciones.filter((p) => p.estado === e).length
     return [
-      { label: 'Publicados', value: porEstado('publicado'), hint: 'visibles en el sitio' },
-      { label: 'En revisión', value: porEstado('revision'), hint: 'esperando tu.ok' },
-      { label: 'Cuentas', value: cuentas.length + registrados.length, hint: 'de clientes' },
+      { label: 'Publicados', value: porEstado('publicado') + cargadas.filter((p) => p.estado === 'publicado').length, hint: 'visibles en el sitio' },
+      { label: 'En revisión', value: porRevisar.length, hint: 'esperando tu ok' },
+      { label: 'Cuentas', value: cuentas.length + registradas.length, hint: 'de clientes' },
       { label: 'Solicitudes', value: pendientes, hint: 'por responder' },
     ]
-  }, [pendientes, registrados.length])
+  }, [pendientes, registradas.length, cargadas, porRevisar.length])
 
   return (
     <PanelShell
@@ -137,6 +146,29 @@ export default function Admin() {
       </div>
 
       <div className="mt-8">
+        {tab === 'cargadas' && (
+          <section className="space-y-4">
+            <SectionLabel count={cargadas.length}>Cargadas por usuarios</SectionLabel>
+            {cargadas.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-piedra-300 px-6 py-10 text-center text-sm text-piedra-500">
+                Todavía no cargó nadie un espacio o una ruta. Cuando lo hagan, lo vas a ver acá para
+                aprobarlo y que aparezca en el mapa del sitio.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {cargadas.map((p) => (
+                  <RevisionCard
+                    key={p.id}
+                    pub={p}
+                    nota={nota[p.id] ?? ''}
+                    onNota={(v) => setNota((n) => ({ ...n, [p.id]: v }))}
+                  />
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
         {tab === 'espacios' && (
           <section className="space-y-4">
             <SectionLabel count={espacios.length}>Espacios</SectionLabel>
@@ -231,14 +263,14 @@ export default function Admin() {
         {tab === 'cuentas' && (
           <section className="space-y-8">
             <div>
-              <SectionLabel count={registrados.length}>Cuentas creadas por usuarios</SectionLabel>
-              {registrados.length === 0 ? (
+              <SectionLabel count={registradas.length}>Cuentas creadas por usuarios</SectionLabel>
+              {registradas.length === 0 ? (
                 <p className="mt-4 rounded-2xl border border-dashed border-piedra-300 px-6 py-8 text-center text-sm text-piedra-500">
                   Todavía no se creó ninguna cuenta. Se registran solas desde “Entrar o crear cuenta”.
                 </p>
               ) : (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {registrados.map((u) => {
+                  {registradas.map((u) => {
                     const suyas = enviadas.filter((s) => s.usuarioId === u.id)
                     return (
                       <article
@@ -470,5 +502,177 @@ export default function Admin() {
         </button>
       </aside>
     </PanelShell>
+  )
+}
+
+// ============================================================
+// Ficha de revisión de lo que cargó un cliente
+// ============================================================
+
+function RevisionCard({
+  pub,
+  nota,
+  onNota,
+}: {
+  pub: PublicacionReal
+  nota: string
+  onNota: (v: string) => void
+}) {
+  const [abierto, setAbierto] = useState(false)
+  const detalles = [
+    pub.tipo === 'espacio' && pub.categoria ? pub.categoria : null,
+    pub.ubicacion,
+    pub.tipo === 'espacio' && pub.capacidad !== null ? `${pub.capacidad} huéspedes` : null,
+    pub.tipo === 'espacio' && pub.precio !== null ? `USD ${pub.precio} por noche` : null,
+    pub.tipo === 'ruta' && pub.distanciaKm !== null ? `${pub.distanciaKm} km` : null,
+    pub.tipo === 'ruta' && pub.dificultad ? `Dificultad ${pub.dificultad}` : null,
+  ].filter(Boolean) as string[]
+
+  return (
+    <li className="rounded-2xl border border-piedra-200 bg-white px-5 py-4">
+      <div className="flex min-w-0 flex-1 flex-wrap items-start gap-x-4 gap-y-2">
+        {pub.fotos[0] ? (
+          <img
+            src={pub.fotos[0]}
+            alt=""
+            className="h-16 w-16 shrink-0 rounded-lg object-cover"
+            onError={(e) => {
+              e.currentTarget.style.visibility = 'hidden'
+            }}
+          />
+        ) : (
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-piedra-100 text-piedra-400">
+            {pub.tipo === 'espacio' ? <TentIcon className="h-5 w-5" /> : <WalkIcon className="h-5 w-5" />}
+          </span>
+        )}
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-cielo-950">{pub.nombre}</p>
+            <span className="rounded-full bg-piedra-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-piedra-600">
+              {pub.tipo}
+            </span>
+          </div>
+          <p className="text-xs leading-relaxed text-piedra-500">{detalles.join(' · ')}</p>
+          <p className="mt-1 text-xs text-piedra-500">
+            De <span className="font-semibold text-cielo-950">{pub.duenioNombre}</span> ·{' '}
+            {pub.duenioEmail} · cargada el {formatDate(pub.fecha)}
+          </p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[11px] text-piedra-400">
+            {pub.coordenadas ? (
+              <a
+                href={`https://www.openstreetmap.org/?mlat=${pub.coordenadas[0]}&mlon=${pub.coordenadas[1]}#map=14/${pub.coordenadas[0]}/${pub.coordenadas[1]}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-cielo-950"
+              >
+                <PinIcon className="h-3 w-3" />
+                {pub.coordenadas[0].toFixed(4)}, {pub.coordenadas[1].toFixed(4)}
+              </a>
+            ) : (
+              <span>sin marcar en el mapa</span>
+            )}
+            <span>
+              {pub.fotos.length} {pub.fotos.length === 1 ? 'foto' : 'fotos'}
+            </span>
+            {pub.servicios.length ? <span>{pub.servicios.length} servicios</span> : null}
+          </p>
+        </div>
+
+        <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
+          <span
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${estadoPublicacionClass[pub.estado]}`}
+          >
+            {estadoPublicacionLabel[pub.estado]}
+          </span>
+          <button
+            onClick={() => setAbierto((v) => !v)}
+            className="text-xs font-semibold text-piedra-600 underline underline-offset-4 hover:text-cielo-950"
+          >
+            {abierto ? 'Ocultar detalle' : 'Ver detalle'}
+          </button>
+        </div>
+      </div>
+
+      {abierto ? (
+        <div className="mt-4 space-y-4 border-t border-piedra-200 pt-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-piedra-500">Descripción</p>
+            <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-piedra-600">
+              {pub.descripcion}
+            </p>
+          </div>
+
+          {pub.servicios.length ? (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-piedra-500">Servicios</p>
+              <p className="mt-1.5 text-sm text-piedra-600">{pub.servicios.join(' · ')}</p>
+            </div>
+          ) : null}
+
+          {pub.fotos.length > 1 ? (
+            <div className="flex flex-wrap gap-2">
+              {pub.fotos.slice(1).map((f) => (
+                <img
+                  key={f}
+                  src={f}
+                  alt=""
+                  className="h-20 w-20 rounded-lg object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.visibility = 'hidden'
+                  }}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {pub.estado === 'revision' ? (
+            <div className="space-y-3 border-t border-piedra-200 pt-4">
+              <label className="block">
+                <span className="text-xs font-medium uppercase tracking-wider text-piedra-500">
+                  Nota para el cliente (opcional, se ve si lo rechazás)
+                </span>
+                <input
+                  value={nota}
+                  onChange={(e) => onNota(e.target.value)}
+                  placeholder="Le falta la foto de portada o confirmar el precio"
+                  className="mt-1.5 w-full rounded-xl border border-piedra-200 px-3.5 py-2.5 text-sm outline-none focus:border-cielo-950"
+                />
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => cambiarEstadoPublicacion(pub.id, 'publicado', nota)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-cielo-950 px-4 py-2 text-xs font-semibold text-cream transition-colors hover:bg-cielo-900"
+                >
+                  <CheckIcon className="h-3.5 w-3.5" />
+                  Aprobar y publicar
+                </button>
+                <button
+                  onClick={() => cambiarEstadoPublicacion(pub.id, 'rechazado', nota)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-piedra-300 px-4 py-2 text-xs font-semibold text-piedra-700 transition-colors hover:border-cielo-950"
+                >
+                  <CloseIcon className="h-3.5 w-3.5" />
+                  Rechazar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2 border-t border-piedra-200 pt-4">
+              <span className="text-xs text-piedra-500">
+                {pub.estado === 'publicado'
+                  ? 'Está visible en el mapa del sitio.'
+                  : 'Rechazada.'}
+              </span>
+              <button
+                onClick={() => cambiarEstadoPublicacion(pub.id, 'revision', '')}
+                className="text-xs font-semibold text-piedra-600 underline underline-offset-4 hover:text-cielo-950"
+              >
+                Volver a revisar
+              </button>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </li>
   )
 }
