@@ -11,6 +11,8 @@ import Placeholder from './pages/Placeholder'
 import Owner from './pages/Owner'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
+import Terminos from './pages/Terminos'
+import PublicacionDetalle from './pages/PublicacionDetalle'
 import { RutaPrivada } from './components/AuthGuard'
 
 type EstadoScroll = { irA?: string } | null
@@ -64,6 +66,8 @@ export default function App() {
           <Route path="/favorites" element={<Placeholder page="favorites" />} />
           <Route path="/trips" element={<Placeholder page="trips" />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/terminos" element={<Terminos />} />
+          <Route path="/publicacion/:id" element={<PublicacionDetalle />} />
           <Route
             path="/owner"
             element={

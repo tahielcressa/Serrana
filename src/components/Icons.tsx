@@ -189,3 +189,23 @@ export const ArrowLeftIcon = ({ className = 'h-4 w-4' }: IconProps) => (
     <path d="M20 12H4M10 6l-6 6 6 6" />
   </svg>
 )
+export const FilmIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="2.5" y="4" width="19" height="16" rx="2.5" />
+    <path d="M7.5 4v16M16.5 4v16M2.5 12h19M2.5 8h5M2.5 16h5M16.5 8h5M16.5 16h5" />
+  </svg>
+)
+
+export const GearIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M14.5 6.5a4 4 0 0 0 5.2 4.9l.2-1.4 1.6.9-.4 1.4a4 4 0 0 0 2.6 6l-1 1-1.2-1a4 4 0 0 0-6 2.6l.2 1.5-1.5.2-.9-1.4a4 4 0 0 0-6-1.5l-1.4.4-.7-1.5a4 4 0 0 0 2.4-6l-1.2-.9.7-1.5 1.5-.2a4 4 0 0 0 4.9-5.1Z" />
+    <circle cx="12" cy="12" r="2.6" />
+  </svg>
+)
+
+export const CameraIcon = ({ className = 'h-5 w-5' }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M3 8.5h3.2l1.4-2.3h8.8l1.4 2.3H21v11H3z" />
+    <circle cx="12" cy="13.5" r="3.4" />
+  </svg>
+)

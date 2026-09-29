@@ -24,9 +24,11 @@ import {
 import { listarUsuarios, salir, usuariosStore } from '../data/auth'
 import {
   cambiarEstadoPublicacion,
+  donde,
   estadoPublicacionClass,
   estadoPublicacionLabel,
   publicacionesStore,
+  tipoPorId,
   type Publicacion as PublicacionReal,
 } from '../data/publicaciones'
 import {
@@ -39,12 +41,14 @@ import {
   type Property,
   type Trail,
 } from '../data/demo'
+import { estadoPedidoClass, estadoPedidoLabel, pedidosStore, responderPedido } from '../data/pedidos'
 import { TentIcon, WalkIcon, SparkIcon, CheckIcon, CloseIcon, PinIcon } from '../components/Icons'
 
-type Tab = 'cargadas' | 'espacios' | 'rutas' | 'cuentas' | 'solicitudes'
+type Tab = 'cargadas' | 'pedidos' | 'espacios' | 'rutas' | 'cuentas' | 'solicitudes'
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'cargadas', label: 'Cargadas por usuarios' },
+  { id: 'pedidos', label: 'Pedidos de servicio' },
   { id: 'espacios', label: 'Espacios' },
   { id: 'rutas', label: 'Rutas' },
   { id: 'cuentas', label: 'Cuentas' },
@@ -64,6 +68,10 @@ export default function Admin() {
 
   const cargadas = useSyncExternalStore(publicacionesStore.subscribe, publicacionesStore.get, () => [])
   const porRevisar = cargadas.filter((p) => p.estado === 'revision')
+
+  const todosPedidos = useSyncExternalStore(pedidosStore.subscribe, pedidosStore.get, () => [])
+  const pedidosAbiertos = todosPedidos.filter((p) => p.estado === 'pendiente')
+  const [respuestasPedido, setRespuestasPedido] = useState<Record<string, string>>({})
 
   const espacios = useMemo(
     () =>
@@ -96,8 +104,9 @@ export default function Admin() {
       { label: 'En revisión', value: porRevisar.length, hint: 'esperando tu ok' },
       { label: 'Cuentas', value: cuentas.length + registradas.length, hint: 'de clientes' },
       { label: 'Solicitudes', value: pendientes, hint: 'por responder' },
+      { label: 'Pedidos', value: pedidosAbiertos.length, hint: 'de clientes' },
     ]
-  }, [pendientes, registradas.length, cargadas, porRevisar.length])
+  }, [pendientes, registradas.length, cargadas, porRevisar.length, pedidosAbiertos.length])
 
   return (
     <PanelShell
@@ -141,6 +150,11 @@ export default function Admin() {
                 {pendientes}
               </span>
             ) : null}
+            {t.id === 'pedidos' && pedidosAbiertos.length > 0 ? (
+              <span className="ml-2 rounded-full bg-earth-500 px-1.5 py-0.5 text-[10px] font-bold text-cream">
+                {pedidosAbiertos.length}
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -163,6 +177,87 @@ export default function Admin() {
                     nota={nota[p.id] ?? ''}
                     onNota={(v) => setNota((n) => ({ ...n, [p.id]: v }))}
                   />
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+        {tab === 'pedidos' && (
+          <section className="space-y-4">
+            <SectionLabel count={todosPedidos.length}>Pedidos de servicio</SectionLabel>
+            {todosPedidos.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-piedra-300 px-6 py-10 text-center text-sm text-piedra-500">
+                Todavía nadie pediu un servicio. Cuando un cliente que solo contrata mande uno, lo vas a
+                ver acá con su correo para responderle.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {todosPedidos.map((p) => (
+                  <li
+                    key={p.id}
+                    className="rounded-2xl border border-piedra-200 bg-white px-5 py-4"
+                  >
+                    <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-cielo-950">{p.necesita}</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-piedra-500">
+                          {tipoPorId(p.tipo).label} · {p.donde || 'sin localidad'} ·{' '}
+                          {p.desde ? `desde ${formatDate(p.desde)}` : 'sin fecha'} ·{' '}
+                          {p.personas ? `${p.personas} personas` : 'sin dato de personas'}
+                        </p>
+                        <p className="mt-2 text-xs leading-relaxed text-piedra-600">{p.mensaje}</p>
+                        <p className="mt-1.5 text-[11px] text-piedra-400">
+                          {p.clienteNombre} · {p.clienteEmail} · pedido el {formatDate(p.fecha)}
+                        </p>
+                        {p.respuesta ? (
+                          <p className="mt-2 rounded-lg bg-forest-50 px-3 py-2 text-xs leading-relaxed text-forest-700">
+                            Tu respuesta: {p.respuesta}
+                          </p>
+                        ) : null}
+                      </div>
+                      <span
+                        className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${estadoPedidoClass[p.estado]}`}
+                      >
+                        {estadoPedidoLabel[p.estado]}
+                      </span>
+                    </div>
+
+                    {p.estado === 'pendiente' ? (
+                      <div className="mt-4 border-t border-piedra-200 pt-4">
+                        <label className="block">
+                          <span className="text-xs font-medium uppercase tracking-wider text-piedra-500">
+                            Respuesta para {p.clienteNombre}
+                          </span>
+                          <textarea
+                            rows={2}
+                            value={respuestasPedido[p.id] ?? ''}
+                            onChange={(e) =>
+                              setRespuestasPedido((r) => ({ ...r, [p.id]: e.target.value }))
+                            }
+                            placeholder={`Hola ${p.clienteNombre.split(' ')[0]}, tenemos lugar para esas fechas...`}
+                            className="mt-1.5 w-full rounded-xl border border-piedra-200 px-3.5 py-2.5 text-sm outline-none focus:border-cielo-950"
+                          />
+                        </label>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => responderPedido(p.id, 'confirmado', respuestasPedido[p.id] ?? '')}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-cielo-950 px-3.5 py-2 text-xs font-semibold text-cream transition-colors hover:bg-cielo-900"
+                          >
+                            <CheckIcon className="h-3.5 w-3.5" />
+                            Confirmar
+                          </button>
+                          <button
+                            onClick={() => responderPedido(p.id, 'rechazado', respuestasPedido[p.id] ?? '')}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-piedra-300 px-3.5 py-2 text-xs font-semibold text-piedra-700 transition-colors hover:border-cielo-950"
+                          >
+                            <CloseIcon className="h-3.5 w-3.5" />
+                            No se puede
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </li>
                 ))}
               </ul>
             )}
@@ -519,13 +614,17 @@ function RevisionCard({
   onNota: (v: string) => void
 }) {
   const [abierto, setAbierto] = useState(false)
+  const tipo = tipoPorId(pub.tipo)
   const detalles = [
-    pub.tipo === 'espacio' && pub.categoria ? pub.categoria : null,
-    pub.ubicacion,
+    tipo.label,
+    pub.categoria,
+    donde(pub),
+    pub.direccion,
     pub.tipo === 'espacio' && pub.capacidad !== null ? `${pub.capacidad} huéspedes` : null,
-    pub.tipo === 'espacio' && pub.precio !== null ? `USD ${pub.precio} por noche` : null,
-    pub.tipo === 'ruta' && pub.distanciaKm !== null ? `${pub.distanciaKm} km` : null,
-    pub.tipo === 'ruta' && pub.dificultad ? `Dificultad ${pub.dificultad}` : null,
+    pub.precio !== null ? `USD ${pub.precio} ${pub.unidad}` : null,
+    pub.distanciaKm !== null ? `${pub.distanciaKm} km` : null,
+    pub.dificultad ? `Dificultad ${pub.dificultad}` : null,
+    pub.servicios.length ? pub.servicios.join(', ') : null,
   ].filter(Boolean) as string[]
 
   return (

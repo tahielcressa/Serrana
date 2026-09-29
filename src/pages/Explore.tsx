@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   properties,
   trails,
@@ -11,11 +11,32 @@ import {
 } from '../data/demo'
 import MapView, { type MapItem } from '../components/MapView'
 import { aMapItem } from '../components/mapItems'
-import { publicadas, publicacionesStore, type Publicacion } from '../data/publicaciones'
-import { PinIcon, TentIcon, WalkIcon } from '../components/Icons'
+import {
+  donde,
+  publicadas,
+  publicacionesStore,
+  resenasStore,
+  tipoPorId,
+  type Publicacion,
+  type TipoPublicacion,
+} from '../data/publicaciones'
+import { PinIcon, StarIcon, TentIcon, WalkIcon, GearIcon } from '../components/Icons'
 import { Rating } from '../components/ui'
 
-type Tab = 'alojamientos' | 'trekkings'
+type Tab = 'alojamientos' | 'trekkings' | 'servicios'
+
+/** Qué tipos de publicación muestra cada pestaña de Explorar. */
+const TIPOS_POR_PESTAÑA: Record<Tab, TipoPublicacion[]> = {
+  alojamientos: ['espacio'],
+  trekkings: ['ruta'],
+  servicios: ['servicio', 'alquiler'],
+}
+
+const ETIQUETA_TAB: Record<Tab, string> = {
+  alojamientos: 'lugares',
+  trekkings: 'rutas',
+  servicios: 'servicios y equipos',
+}
 
 const typeFilters: ('Todos' | PropertyCategory)[] = [
   'Todos',
@@ -32,6 +53,7 @@ const short = (n: number) => `$${n}`
 
 export default function Explore() {
   const [params] = useSearchParams()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>(params.get('tipo') === 'trail' ? 'trekkings' : 'alojamientos')
   const [type, setType] = useState<'Todos' | PropertyCategory>('Todos')
   const [selected, setSelected] = useState<string | undefined>()
@@ -45,43 +67,45 @@ export default function Explore() {
     [type],
   )
 
-  // Lugares y rutas que=subieron los clientes y ya aprobamos.
+  // Publicaciones que subieron los clientes y ya aprobamos.
   const todasCargadas = useSyncExternalStore(publicacionesStore.subscribe, publicacionesStore.get, () => [])
-  const cargadas = useMemo(
-    () => publicadas().filter((p) => p.tipo === (tab === 'alojamientos' ? 'espacio' : 'ruta')),
-    [tab, todasCargadas],
-  )
+  const cargadas = useMemo(() => {
+    const tipos = TIPOS_POR_PESTAÑA[tab]
+    return publicadas().filter((p) => tipos.includes(p.tipo))
+  }, [tab, todasCargadas])
   const conPin = useMemo(() => cargadas.filter((p) => p.coordenadas), [cargadas])
 
   const items: MapItem[] = useMemo(
     () =>
-      tab === 'alojamientos'
-        ? [
-            ...stays.map((p) => ({
-              id: p.id,
-              position: p.coordinates,
-              label: short(p.pricePerNight),
-              title: p.name,
-              subtitle: `${categoryLabel[p.category]} · ${p.location}`,
-              meta: p.rating.toFixed(1),
-              image: p.image,
-              href: `/property/${p.id}`,
-            })),
-            ...conPin.map(aMapItem),
-          ]
-        : [
-            ...trails.map((t) => ({
-              id: t.id,
-              position: t.coordinates,
-              label: `${t.distanceKm} km`,
-              title: t.name,
-              subtitle: t.location,
-              meta: t.rating.toFixed(1),
-              image: t.image,
-              href: `/trail/${t.id}`,
-            })),
-            ...conPin.map(aMapItem),
-          ],
+      tab === 'servicios'
+        ? conPin.map(aMapItem)
+        : tab === 'alojamientos'
+          ? [
+              ...stays.map((p) => ({
+                id: p.id,
+                position: p.coordinates,
+                label: short(p.pricePerNight),
+                title: p.name,
+                subtitle: `${categoryLabel[p.category]} · ${p.location}`,
+                meta: p.rating.toFixed(1),
+                image: p.image,
+                href: `/property/${p.id}`,
+              })),
+              ...conPin.map(aMapItem),
+            ]
+          : [
+              ...trails.map((t) => ({
+                id: t.id,
+                position: t.coordinates,
+                label: `${t.distanceKm} km`,
+                title: t.name,
+                subtitle: t.location,
+                meta: t.rating.toFixed(1),
+                image: t.image,
+                href: `/trail/${t.id}`,
+              })),
+              ...conPin.map(aMapItem),
+            ],
     [tab, stays, conPin],
   )
 
@@ -106,7 +130,7 @@ export default function Explore() {
         <div className="mx-auto w-full max-w-[1800px] px-4 py-3 sm:px-6">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1 rounded-full border border-piedra-200 bg-white p-1">
-              {(['alojamientos', 'trekkings'] as Tab[]).map((t) => (
+              {(['alojamientos', 'trekkings', 'servicios'] as Tab[]).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
@@ -114,8 +138,16 @@ export default function Explore() {
                     tab === t ? 'bg-cielo-950 text-cream' : 'text-piedra-700 hover:text-cielo-950'
                   }`}
                 >
-                  {t === 'alojamientos' ? <TentIcon className="h-4 w-4" /> : <WalkIcon className="h-4 w-4" />}
-                  <span className="hidden sm:inline">{t === 'alojamientos' ? 'Alojamientos' : 'Trekkings'}</span>
+                  {t === 'alojamientos' ? (
+                    <TentIcon className="h-4 w-4" />
+                  ) : t === 'trekkings' ? (
+                    <WalkIcon className="h-4 w-4" />
+                  ) : (
+                    <GearIcon className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {t === 'alojamientos' ? 'Alojamientos' : t === 'trekkings' ? 'Trekkings' : 'Servicios'}
+                  </span>
                 </button>
               ))}
             </div>
@@ -224,37 +256,52 @@ export default function Explore() {
         >
           <p className="text-sm text-piedra-500">
             <strong className="font-semibold text-cielo-950">{items.length}</strong>{' '}
-            {tab === 'alojamientos' ? 'lugares' : 'rutas'} en las Sierras de Córdoba
+            {ETIQUETA_TAB[tab]} en las Sierras de Córdoba
           </p>
 
-          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {tab === 'alojamientos'
-              ? stays.map((p) => (
-                  <StayResult
-                    key={p.id}
-                    property={p}
-                    selected={selected === p.id}
-                    onHover={() => setSelected(p.id)}
-                    onOpen={() => pick(p.id)}
-                  />
-                ))
-              : trails.map((t) => (
-                  <TrailResult
-                    key={t.id}
-                    trail={t}
-                    selected={selected === t.id}
-                    onHover={() => setSelected(t.id)}
-                    onOpen={() => pick(t.id)}
-                  />
-                ))}
-          </div>
+          {tab === 'servicios' ? (
+            cargadas.length === 0 ? (
+              <p className="mt-6 max-w-prose text-sm leading-relaxed text-piedra-500">
+                Todavía no hay servicios ni equipos cargados. Si filmás, fotografiás o alquilás
+                equipamiento, podés publicarlo desde tu panel y aparece acá.
+              </p>
+            ) : null
+          ) : (
+            <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {tab === 'alojamientos'
+                ? stays.map((p) => (
+                    <StayResult
+                      key={p.id}
+                      property={p}
+                      selected={selected === p.id}
+                      onHover={() => setSelected(p.id)}
+                      onOpen={() => pick(p.id)}
+                    />
+                  ))
+                : trails.map((t) => (
+                    <TrailResult
+                      key={t.id}
+                      trail={t}
+                      selected={selected === t.id}
+                      onHover={() => setSelected(t.id)}
+                      onOpen={() => pick(t.id)}
+                    />
+                  ))}
+            </div>
+          )}
 
           {cargadas.length > 0 ? (
             <div className="mt-8">
               <p className="text-sm text-piedra-500">
                 <strong className="font-semibold text-cielo-950">{cargadas.length}</strong>{' '}
-                {cargadas.length === 1 ? 'lugar cargado' : 'lugares cargados'} por quienes alquilan y
-                caminan las sierras con nosotros
+                {tab === 'servicios'
+                  ? cargadas.length === 1
+                    ? 'servicio o equipo cargado'
+                    : 'servicios y equipos cargados'
+                  : cargadas.length === 1
+                    ? 'lugar cargado'
+                    : 'lugares cargados'}{' '}
+                por quienes alquilan y caminan las sierras con nosotros
               </p>
               <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {cargadas.map((p) => (
@@ -263,7 +310,7 @@ export default function Explore() {
                     pub={p}
                     selected={selected === p.id}
                     onHover={() => setSelected(p.id)}
-                    onOpen={() => p.coordenadas && pick(p.id)}
+                    onOpen={() => navigate(`/publicacion/${p.id}`)}
                   />
                 ))}
               </div>
@@ -303,9 +350,12 @@ function CargadoResult({
   onOpen: () => void
 }) {
   const esEspacio = pub.tipo === 'espacio'
-  const etiqueta = esEspacio ? pub.categoria : pub.dificultad
-  const precio = esEspacio && pub.precio !== null ? `USD ${pub.precio} / noche` : null
-  const distancia = !esEspacio && pub.distanciaKm !== null ? `${pub.distanciaKm} km` : null
+  const etiqueta = pub.categoria || tipoPorId(pub.tipo).label
+  const precio = pub.precio !== null ? `USD ${pub.precio} ${pub.unidad}` : null
+  const distancia = pub.distanciaKm !== null ? `${pub.distanciaKm} km` : null
+  const resenas = useSyncExternalStore(resenasStore.subscribe, resenasStore.get, () => [])
+  const propias = resenas.filter((r) => r.publicacionId === pub.id)
+  const promedio = propias.length ? propias.reduce((a, r) => a + r.puntaje, 0) / propias.length : null
 
   return (
     <article
@@ -343,15 +393,25 @@ function CargadoResult({
       <div className="p-4">
         <h3 className="font-semibold leading-snug text-cielo-950">{pub.nombre}</h3>
         <p className="mt-1 text-xs text-piedra-500">
-          {[pub.region, pub.ubicacion].filter(Boolean).join(' · ')}
+          {[tipoPorId(pub.tipo).label, donde(pub)].filter(Boolean).join(' · ')}
         </p>
         <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-piedra-600">{pub.descripcion}</p>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-piedra-200 pt-3">
-          <span className="text-[11px] text-piedra-500">Anfitrión: {pub.duenioNombre}</span>
+          <span className="flex items-center gap-1.5 text-[11px] text-piedra-500">
+            {promedio !== null ? (
+              <>
+                <StarIcon className="h-3.5 w-3.5" />
+                {promedio.toFixed(1)} ({propias.length})
+              </>
+            ) : (
+              'Sin reseñas todavía'
+            )}
+          </span>
           {precio || distancia ? (
             <span className="text-sm font-semibold text-cielo-950">{precio ?? distancia}</span>
           ) : null}
         </div>
+        <p className="mt-2 text-[11px] text-piedra-400">Anfitrión: {pub.duenioNombre}</p>
       </div>
     </article>
   )

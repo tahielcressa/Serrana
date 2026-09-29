@@ -50,6 +50,7 @@ export default function Footer() {
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link className="text-piedra-400 hover:text-cream" to="/owner">Publicar mi espacio</Link></li>
               <li><Link className="text-piedra-400 hover:text-cream" to="/owner">Mi panel</Link></li>
+              <li><Link className="text-piedra-400 hover:text-cream" to="/owner">Quiero contratar</Link></li>
               <li><Link className="text-piedra-400 hover:text-cream" to="/admin">Panel de la plataforma</Link></li>
               <li><Link className="text-piedra-400 hover:text-cream" to="/login">Crear cuenta</Link></li>
               <li><span className="text-piedra-400">hola@serrana.travel</span></li>
@@ -57,9 +58,14 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-6 text-xs text-piedra-500 sm:flex-row">
+        <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-piedra-500 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Serrana · Sierras de Córdoba</p>
-          <p>Prototipo: lugares reales con inventario de ejemplo</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link className="text-piedra-400 underline underline-offset-4 transition-colors hover:text-cream" to="/terminos">
+              Términos y condiciones
+            </Link>
+            <span>Prototipo: lugares reales con inventario de ejemplo</span>
+          </div>
         </div>
       </div>
     </footer>
