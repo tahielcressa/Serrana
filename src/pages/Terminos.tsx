@@ -53,6 +53,7 @@ const SECCIONES: Seccion[] = [
     titulo: 'Tus datos',
     cuerpo: [
       'Guardamos tu nombre, tu correo y lo que cargás en tu panel. No vendemos ni cedemos esa información.',
+      'Todo eso vive en el almacenamiento local de tu navegador y no se envía a ningún servidor. No usamos cookies de rastreo ni herramientas de publicidad: está detallado en la página de privacidad.',
       'Las fotos que subís tienen que ser tuyas o tener permiso de quien las tomó. No uses imágenes de Google o de otro sitio sin permiso.',
     ],
   },
@@ -87,7 +88,15 @@ export default function Terminos() {
         <h1 className="mt-6 font-serif text-3xl text-cielo-950 sm:text-4xl">Términos y condiciones</h1>
         <p className="mt-3 text-sm leading-relaxed text-piedra-600">
           Última actualización: septiembre de 2026. Esta versión es un borrador: antes de publicar la
-          web para clientes reales hay que revisarla con un abogado.
+          web para clientes reales hay que revisarla con un abogado. Sobre qué guardamos y qué cookies
+          usamos, mirá la página de{' '}
+          <Link
+            to="/privacidad"
+            className="font-semibold text-cielo-950 underline underline-offset-4 hover:text-cielo-700"
+          >
+            privacidad
+          </Link>
+          .
         </p>
 
         <nav className="mt-8 rounded-2xl border border-piedra-200 bg-white px-5 py-4">

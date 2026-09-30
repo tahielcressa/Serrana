@@ -105,6 +105,16 @@ export default function Navbar() {
                 {s.label}
               </button>
             ))}
+            <NavLink
+              to="/privacidad"
+              className={`rounded-full px-3 py-2 text-xs font-medium transition-colors ${
+                solid
+                  ? 'text-piedra-500 hover:bg-piedra-100 hover:text-cielo-950'
+                  : 'text-cream/70 hover:bg-white/10 hover:text-cream'
+              }`}
+            >
+              Privacidad
+            </NavLink>
             <button
               onClick={() => navigate(destino)}
               className={`ml-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
@@ -163,6 +173,20 @@ export default function Navbar() {
                   {s.label}
                 </button>
               ))}
+              <NavLink
+                to="/privacidad"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-piedra-700 hover:bg-piedra-100"
+                onClick={() => setOpen(false)}
+              >
+                Privacidad y cookies
+              </NavLink>
+              <NavLink
+                to="/terminos"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-piedra-700 hover:bg-piedra-100"
+                onClick={() => setOpen(false)}
+              >
+                Términos y condiciones
+              </NavLink>
               <button
                 onClick={() => {
                   setOpen(false)

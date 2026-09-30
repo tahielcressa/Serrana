@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-cielo-950 text-piedra-300">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+        <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1.1fr_0.9fr]">
           <div>
             <div className="flex items-center gap-2">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-forest-800 text-sand-300">
@@ -56,16 +56,19 @@ export default function Footer() {
               <li><span className="text-piedra-400">hola@serrana.travel</span></li>
             </ul>
           </div>
+
+          <div>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-cream">Legal</h4>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li><Link className="text-piedra-400 hover:text-cream" to="/terminos">Términos y condiciones</Link></li>
+              <li><Link className="text-piedra-400 hover:text-cream" to="/privacidad">Privacidad y cookies</Link></li>
+            </ul>
+          </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-piedra-500 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Serrana · Sierras de Córdoba</p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Link className="text-piedra-400 underline underline-offset-4 transition-colors hover:text-cream" to="/terminos">
-              Términos y condiciones
-            </Link>
-            <span>Prototipo: lugares reales con inventario de ejemplo</span>
-          </div>
+          <p>Prototipo: lugares reales con inventario de ejemplo</p>
         </div>
       </div>
     </footer>

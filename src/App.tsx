@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, useLocation, Link } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import CookieBanner from './components/CookieBanner'
 import Landing from './pages/Landing'
 import Explore from './pages/Explore'
 import Property from './pages/Property'
@@ -12,6 +13,7 @@ import Owner from './pages/Owner'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
 import Terminos from './pages/Terminos'
+import Privacidad from './pages/Privacidad'
 import PublicacionDetalle from './pages/PublicacionDetalle'
 import { RutaPrivada } from './components/AuthGuard'
 
@@ -67,6 +69,7 @@ export default function App() {
           <Route path="/trips" element={<Placeholder page="trips" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/terminos" element={<Terminos />} />
+          <Route path="/privacidad" element={<Privacidad />} />
           <Route path="/publicacion/:id" element={<PublicacionDetalle />} />
           <Route
             path="/owner"
@@ -88,6 +91,7 @@ export default function App() {
         </Routes>
       </div>
       <Footer />
+      <CookieBanner />
     </div>
   )
 }
